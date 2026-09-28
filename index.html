@@ -74,6 +74,7 @@ button.btn { font: inherit; font-weight: 600; cursor: pointer; min-height: 48px;
 .btn-primary { background: var(--mark); color: var(--mark-ink); border-color: var(--mark); }
 .btn-primary:hover { filter: brightness(.95); }
 .btn-secondary { background: transparent; color: var(--ink); }
+a.btn.linkbtn { display: inline-flex; align-items: center; text-decoration: none; color: var(--ink); font-weight: 600; min-height: 48px; padding: 0 22px; border-radius: 12px; border: 2px solid var(--ink); }
 .btn-secondary:hover { background: color-mix(in srgb, var(--ink) 8%, transparent); }
 
 .progress { height: 12px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 22px 0 10px; }
@@ -227,6 +228,11 @@ legend { font-family: var(--font-head); font-weight: 600; font-size: 1.05rem; pa
       <p class="lead">Choose which deadline to be reminded about, and when.</p>
       <fieldset><legend>Deadline</legend><div id="rem-dl"></div></fieldset>
       <fieldset>
+        <legend>How</legend>
+        <label class="opt"><input type="radio" name="how" value="calendar" checked><span>Add to calendar<span class="o-sub">Works even when Lecture+ is closed</span></span></label>
+        <label class="opt"><input type="radio" name="how" value="notif"><span>Browser notification<span class="o-sub">Only while Lecture+ is open in your browser</span></span></label>
+      </fieldset>
+      <fieldset>
         <legend>Remind me</legend>
         <label class="opt"><input type="radio" name="when" value="1 day before" checked><span>1 day before<span class="o-sub">Good for labs and homework</span></span></label>
         <label class="opt"><input type="radio" name="when" value="3 hours before"><span>3 hours before<span class="o-sub">Good for quizzes</span></span></label>
@@ -234,7 +240,7 @@ legend { font-family: var(--font-head); font-weight: 600; font-size: 1.05rem; pa
       </fieldset>
       <div id="rem-notice" class="notice" role="alert" hidden></div>
       <div class="actions">
-        <button type="button" class="btn btn-primary" id="turn-on">Turn on reminder</button>
+        <button type="button" class="btn btn-primary" id="turn-on">Add to calendar</button>
         <button type="button" class="btn btn-secondary" id="rem-back">Back to to-do list</button>
       </div>
     </section>
@@ -244,6 +250,10 @@ legend { font-family: var(--font-head); font-weight: 600; font-size: 1.05rem; pa
       <div class="success-mark" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>
       <h1 id="h-ok" tabindex="-1">Reminder is on</h1>
       <div class="summary-box" id="ok-box"></div>
+      <div class="actions" id="cal-actions" hidden>
+        <button type="button" class="btn btn-secondary" id="cal-again">Download file again</button>
+        <a class="btn btn-secondary linkbtn" id="cal-google" target="_blank" rel="noopener">Open in Google Calendar</a>
+      </div>
       <div class="actions">
         <button type="button" class="btn btn-primary" id="ok-todo">View to-do list</button>
         <button type="button" class="btn btn-secondary" id="ok-another">Upload another lecture</button>
@@ -431,24 +441,79 @@ legend { font-family: var(--font-head); font-weight: 600; font-size: 1.05rem; pa
       s.appendChild(sub); lab.appendChild(r); lab.appendChild(s); box.appendChild(lab);
     });
   }
-  function finish(withNotifications) {
+  var lastIcs = null;
+  function pickedDeadline() {
     var id = document.querySelector('input[name=dl]:checked').value;
+    return deadlines.filter(function (x) { return x.id === id; })[0];
+  }
+  function esc(t) { return String(t).replace(/([,;\\])/g, '\\$1'); }
+  function ymd(iso) { return iso.replace(/-/g, ''); }
+  function buildIcs(d, when) {
+    var trig = { '1 day before': '-P1D', '3 hours before': '-PT3H', '1 hour before': '-PT1H' }[when];
+    var stamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    var title = 'Deadline: ' + d.title;
+    return [
+      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Lecture+//Prototype//EN', 'CALSCALE:GREGORIAN',
+      'BEGIN:VEVENT',
+      'UID:' + d.id + '-' + ymd(d.date) + '@lecture-plus',
+      'DTSTAMP:' + stamp,
+      'DTSTART:' + ymd(d.date) + 'T235900',
+      'DURATION:PT1M',
+      'SUMMARY:' + esc(title),
+      'DESCRIPTION:' + esc('Added from Lecture+'),
+      'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + esc(title), 'TRIGGER:' + trig, 'END:VALARM',
+      'END:VEVENT', 'END:VCALENDAR'
+    ].join('\r\n');
+  }
+  function downloadIcs(ics, d) {
+    var blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'deadline-' + d.id + '.ics';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+  }
+  function googleUrl(d) {
+    var t = 'Deadline: ' + d.title;
+    return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent(t) +
+      '&dates=' + ymd(d.date) + 'T235800/' + ymd(d.date) + 'T235900&details=' + encodeURIComponent('Added from Lecture+');
+  }
+  function finish(mode) {
+    var d = pickedDeadline();
     var when = document.querySelector('input[name=when]:checked').value;
-    var d = deadlines.filter(function (x) { return x.id === id; })[0];
-    reminder = { d: d, when: when, notif: withNotifications };
+    reminder = { d: d, when: when, mode: mode };
     var box = $('ok-box'); box.innerHTML = '';
     var p1 = document.createElement('p'); p1.style.fontWeight = '600'; p1.textContent = d.title;
     var p2 = document.createElement('p'); p2.textContent = 'Due ' + fmtDate(d.date) + '. Reminder: ' + when + '.';
     box.appendChild(p1); box.appendChild(p2);
-    if (!withNotifications) {
-      var p3 = document.createElement('p'); p3.style.marginTop = '8px';
-      p3.textContent = 'Notifications are off on this device, so you will see this reminder inside Lecture+ only.';
-      box.appendChild(p3);
+    function add(t) { var p = document.createElement('p'); p.style.marginTop = '8px'; p.textContent = t; box.appendChild(p); }
+    var cal = (mode === 'calendar');
+    $('h-ok').textContent = cal ? 'Calendar file is ready' : 'Reminder is on';
+    $('cal-actions').hidden = !cal;
+    if (cal) {
+      add('Open the downloaded file to add the deadline to your calendar app. We set it for 23:59 on the due date, and you can change the time there.');
+      lastIcs = { ics: buildIcs(d, when), d: d };
+      $('cal-google').href = googleUrl(d);
+    } else if (mode === 'inapp') {
+      add('Notifications are off on this device, so you will see this reminder inside Lecture+ only.');
     }
     show('success');
   }
-  $('turn-on').addEventListener('click', function () {
-    var n = $('rem-notice'); n.hidden = true;
+  function calendar() {
+    try {
+      var d = pickedDeadline();
+      var when = document.querySelector('input[name=when]:checked').value;
+      downloadIcs(buildIcs(d, when), d);
+      finish('calendar');
+    } catch (e) {
+      var n = $('rem-notice');
+      n.innerHTML = '<strong></strong><span></span>';
+      n.firstChild.textContent = 'We could not create the calendar file';
+      n.lastChild.textContent = 'Try again, or choose Browser notification instead.';
+      n.hidden = false;
+    }
+  }
+  function notify() {
     if (!('Notification' in window)) { blocked('Notifications are not available in this browser.'); return; }
     if (Notification.permission === 'granted') { ok(); return; }
     if (Notification.permission === 'denied') { blocked('Notifications are blocked for this site.'); return; }
@@ -456,21 +521,33 @@ legend { font-family: var(--font-head); font-weight: 600; font-size: 1.05rem; pa
       var r = Notification.requestPermission(function (perm) { perm === 'granted' ? ok() : blocked('You did not allow notifications.'); });
       if (r && r.then) r.then(function (perm) { perm === 'granted' ? ok() : blocked('You did not allow notifications.'); });
     } catch (e) { blocked('Notifications could not be turned on here.'); }
+  }
+  $('turn-on').addEventListener('click', function () {
+    $('rem-notice').hidden = true;
+    var how = document.querySelector('input[name=how]:checked').value;
+    if (how === 'calendar') calendar(); else notify();
   });
+  Array.prototype.forEach.call(document.querySelectorAll('input[name=how]'), function (r) {
+    r.addEventListener('change', function () {
+      $('turn-on').textContent = r.value === 'calendar' ? 'Add to calendar' : 'Turn on notification';
+      $('rem-notice').hidden = true;
+    });
+  });
+  $('cal-again').addEventListener('click', function () { if (lastIcs) downloadIcs(lastIcs.ics, lastIcs.d); });
   function ok() {
     try { new Notification('Lecture+ reminder is on', { body: 'We will remind you before your deadline.' }); } catch (e) {}
-    finish(true);
+    finish('notif');
   }
   function blocked(reason) {
     var n = $('rem-notice');
     n.innerHTML = '<strong></strong><span></span><div class="actions"></div>';
     n.firstChild.textContent = reason;
-    n.children[1].textContent = 'You can allow notifications in your browser settings and try again, or save the reminder inside Lecture+ only.';
+    n.children[1].textContent = 'Allow notifications in your browser settings and try again, or add the deadline to your calendar instead.';
     var a = n.lastChild;
-    var b1 = document.createElement('button'); b1.type = 'button'; b1.className = 'btn btn-primary'; b1.textContent = 'Save without notifications';
-    b1.addEventListener('click', function () { finish(false); });
-    var b2 = document.createElement('button'); b2.type = 'button'; b2.className = 'btn btn-secondary'; b2.textContent = 'Try again';
-    b2.addEventListener('click', function () { $('turn-on').click(); });
+    var b1 = document.createElement('button'); b1.type = 'button'; b1.className = 'btn btn-primary'; b1.textContent = 'Add to calendar instead';
+    b1.addEventListener('click', function () { document.querySelector('input[name=how][value=calendar]').checked = true; $('turn-on').textContent = 'Add to calendar'; n.hidden = true; calendar(); });
+    var b2 = document.createElement('button'); b2.type = 'button'; b2.className = 'btn btn-secondary'; b2.textContent = 'Save inside Lecture+ only';
+    b2.addEventListener('click', function () { finish('inapp'); });
     a.appendChild(b1); a.appendChild(b2);
     n.hidden = false; b1.focus();
   }
