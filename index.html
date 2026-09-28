@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lecture+ prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F6F7FA; --surface: #FFFFFF; --ink: #1F2A44; --ink-soft: #4E5A75; --line: #D5DAE5;
+  --mark: #F2C94C; --mark-ink: #1F2A44; --ok: #1E7A4F; --ok-bg: #E6F4EC;
+  --err: #B3261E; --err-bg: #FCECEA; --warn-bg: #FFF6DA; --focus: #2F5BEA;
+  --font-head: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Public Sans", "Segoe UI", system-ui, sans-serif;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131A2B; --surface: #1B2438; --ink: #EEF1F8; --ink-soft: #A9B3CA; --line: #34405C;
+    --err: #FF8A80; --err-bg: #3A1F24; --ok: #5FD09B; --ok-bg: #16352A; --warn-bg: #3A3216; --focus: #8AA8FF;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131A2B; --surface: #1B2438; --ink: #EEF1F8; --ink-soft: #A9B3CA; --line: #34405C;
+  --err: #FF8A80; --err-bg: #3A1F24; --ok: #5FD09B; --ok-bg: #16352A; --warn-bg: #3A3216; --focus: #8AA8FF;
+}
+html { height: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); }
+*, *::before, *::after { box-sizing: inherit; }
+body { margin: 0; min-height: 100%; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 1rem; line-height: 1.55; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.wrap { max-width: 640px; margin: 0 auto; padding: 20px 20px 56px; }
+header.top { padding: 8px 0 20px; }
+.brand { font-family: var(--font-head); font-weight: 700; font-size: 1.4rem; letter-spacing: -0.01em; }
+.brand span { background: var(--mark); color: var(--mark-ink); padding: 0 6px; border-radius: 4px; margin-left: 2px; }
+
+.steps { display: flex; gap: 8px; list-style: none; margin: 0 0 26px; padding: 0; font-size: .85rem; color: var(--ink-soft); }
+.steps li { flex: 1; padding-top: 8px; border-top: 3px solid var(--line); }
+.steps li[aria-current="step"] { border-top-color: var(--mark); color: var(--ink); font-weight: 600; }
+.steps li.done { border-top-color: var(--ok); color: var(--ink); }
+
+h1 { font-family: var(--font-head); font-size: clamp(1.7rem, 6vw, 2.3rem); line-height: 1.12; letter-spacing: -0.02em; margin: 0 0 10px; }
+h1:focus { outline: none; }
+h2 { font-family: var(--font-head); font-size: 1.15rem; margin: 0 0 8px; }
+.lead { color: var(--ink-soft); margin: 0 0 22px; max-width: 56ch; }
+
+.demo-chip { display: inline-block; font-size: .8rem; font-weight: 600; padding: 3px 10px; border-radius: 99px; background: var(--warn-bg); color: var(--ink); border: 1px solid var(--mark); margin-bottom: 14px; }
+
+/* Upload */
+.drop { display: block; width: 100%; text-align: left; cursor: pointer; background: var(--surface); border: 2px dashed var(--line); border-radius: 14px; padding: 32px 22px; color: var(--ink); font: inherit; transition: border-color .15s, background .15s; }
+.drop:hover, .drop.over { border-color: var(--ink); background: color-mix(in srgb, var(--mark) 14%, var(--surface)); }
+.drop .big { font-family: var(--font-head); font-weight: 600; font-size: 1.2rem; display: block; margin-bottom: 4px; }
+.drop .small { color: var(--ink-soft); font-size: .9rem; }
+.drop-icon { width: 44px; height: 44px; margin-bottom: 14px; }
+input[type=file] { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+.formats { margin: 12px 0 0; font-size: .875rem; color: var(--ink-soft); }
+
+.error, .notice { margin-top: 14px; padding: 12px 14px; border-radius: 10px; font-size: .95rem; }
+.error { background: var(--err-bg); color: var(--err); border: 1px solid var(--err); }
+.notice { background: var(--warn-bg); border: 1px solid var(--mark); }
+.error strong, .notice strong { display: block; }
+
+.file-card { display: flex; align-items: center; gap: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+.file-badge { flex: none; width: 48px; height: 48px; border-radius: 10px; background: var(--ink); color: var(--bg); display: grid; place-items: center; font-weight: 600; font-size: .8rem; }
+.file-meta { min-width: 0; flex: 1; }
+.file-name { font-weight: 600; overflow-wrap: anywhere; }
+.file-sub { color: var(--ink-soft); font-size: .875rem; }
+
+/* Buttons */
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
+button.btn { font: inherit; font-weight: 600; cursor: pointer; min-height: 48px; padding: 0 22px; border-radius: 12px; border: 2px solid var(--ink); }
+.btn-primary { background: var(--mark); color: var(--mark-ink); border-color: var(--mark); }
+.btn-primary:hover { filter: brightness(.95); }
+.btn-secondary { background: transparent; color: var(--ink); }
+.btn-secondary:hover { background: color-mix(in srgb, var(--ink) 8%, transparent); }
+
+.progress { height: 12px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 22px 0 10px; }
+.progress > div { height: 100%; width: 0; background: var(--mark); transition: width .3s linear; }
+.status { color: var(--ink-soft); }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 18px 20px; margin-bottom: 14px; }
+.card p { margin: 0; }
+.topics { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.topics li { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.tag { font-size: .75rem; font-weight: 600; padding: 2px 8px; border-radius: 99px; background: var(--mark); color: var(--mark-ink); }
+
+/* Deadlines */
+.dl-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.dl { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+.dl.off { opacity: .6; }
+.dl-head { display: flex; gap: 12px; align-items: center; cursor: pointer; font-weight: 600; }
+.dl-head input { width: 22px; height: 22px; accent-color: var(--ok); flex: none; }
+.quote { color: var(--ink-soft); font-size: .9rem; margin: 8px 0 12px 34px; }
+.dl-date { margin-left: 34px; }
+.dl-date label { display: block; font-size: .875rem; font-weight: 600; margin-bottom: 4px; }
+.dl-date input { font: inherit; min-height: 44px; padding: 0 10px; border: 2px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); max-width: 100%; }
+.dl-date input.bad { border-color: var(--err); }
+.dl-err { color: var(--err); font-size: .875rem; margin: 6px 0 0 34px; }
+.detect { margin-left: 34px; font-size: .85rem; color: var(--ink-soft); margin-top: 2px; }
+
+/* To-do */
+.todo-group h2 { margin-top: 6px; }
+.todo { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 10px; }
+.todo li { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.todo label { display: flex; gap: 12px; align-items: flex-start; cursor: pointer; }
+.todo input { width: 22px; height: 22px; accent-color: var(--ok); flex: none; margin-top: 2px; }
+.todo .t-sub { display: block; color: var(--ink-soft); font-size: .875rem; }
+.todo input:checked + span .t-title { text-decoration: line-through; color: var(--ink-soft); }
+.t-title { font-weight: 600; }
+
+/* Reminder */
+fieldset { border: 0; padding: 0; margin: 0 0 20px; }
+legend { font-family: var(--font-head); font-weight: 600; font-size: 1.05rem; padding: 0; margin-bottom: 10px; }
+.opt { display: flex; gap: 12px; align-items: flex-start; background: var(--surface); border: 2px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; cursor: pointer; }
+.opt:has(input:checked) { border-color: var(--ink); }
+.opt input { width: 20px; height: 20px; accent-color: var(--ink); margin-top: 2px; flex: none; }
+.opt .o-sub { display: block; color: var(--ink-soft); font-size: .875rem; }
+
+.success-mark { width: 56px; height: 56px; border-radius: 50%; background: var(--ok-bg); color: var(--ok); display: grid; place-items: center; margin-bottom: 14px; }
+.summary-box { background: var(--ok-bg); border: 1px solid var(--ok); border-radius: 12px; padding: 14px 16px; }
+
+[hidden] { display: none !important; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top"><div class="brand">Lecture<span>+</span></div></header>
+
+  <ol class="steps" aria-label="Progress">
+    <li id="st1" aria-current="step">Upload</li>
+    <li id="st2">Analyze</li>
+    <li id="st3">Check</li>
+    <li id="st4">Remind</li>
+  </ol>
+
+  <main>
+    <!-- 1 Upload -->
+    <section id="screen-upload" aria-labelledby="h-upload">
+      <h1 id="h-upload" tabindex="-1">Add your lecture</h1>
+      <p class="lead">Upload a recording, slides or notes from your last class. Lecture+ turns it into a summary and a to-do list with deadlines.</p>
+      <div id="pick-area">
+        <input type="file" id="file-input" accept=".mp3,.m4a,.wav,.pdf,.pptx,.docx,.txt" aria-describedby="formats">
+        <button type="button" class="drop" id="drop" aria-label="Choose a lecture file from your device">
+          <svg class="drop-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 32V10M24 10l-9 9M24 10l9 9"/><path d="M8 32v6a2 2 0 002 2h28a2 2 0 002-2v-6"/></svg>
+          <span class="big">Choose a file</span>
+          <span class="small">Tap to browse your device, or drag a file here.</span>
+        </button>
+        <p class="formats" id="formats">Audio: MP3, M4A, WAV. Documents: PDF, PPTX, DOCX, TXT. Up to 200 MB.</p>
+      </div>
+      <div id="error" class="error" role="alert" hidden></div>
+      <div id="selected" hidden>
+        <div class="file-card">
+          <div class="file-badge" id="file-badge" aria-hidden="true">FILE</div>
+          <div class="file-meta"><div class="file-name" id="file-name"></div><div class="file-sub" id="file-sub"></div></div>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn btn-primary" id="analyze">Analyze lecture</button>
+          <button type="button" class="btn btn-secondary" id="remove">Remove file</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 Processing -->
+    <section id="screen-processing" aria-labelledby="h-proc" hidden>
+      <h1 id="h-proc" tabindex="-1">Analyzing your lecture</h1>
+      <p class="lead" id="proc-file"></p>
+      <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-labelledby="proc-status" id="bar"><div id="bar-fill"></div></div>
+      <p class="status" id="proc-status" aria-live="polite">Reading the file…</p>
+      <div class="actions"><button type="button" class="btn btn-secondary" id="cancel">Cancel and go back</button></div>
+    </section>
+
+    <!-- 3 Summary -->
+    <section id="screen-summary" aria-labelledby="h-sum" hidden>
+      <span class="demo-chip">Demo data: analysis is not connected yet</span>
+      <h1 id="h-sum" tabindex="-1">Software and operating systems</h1>
+      <p class="lead" id="sum-file"></p>
+      <div class="card">
+        <h2>Summary</h2>
+        <p>This lecture showed how computer software is organized. System software (programming languages, compilers and interpreters, operating systems) runs the computer, while application software is what people use directly. An operating system sits between the user and the hardware and manages memory, the processor, devices and files. The lecture also covered types of operating systems and the three main families: Windows, Macintosh and Unix-like.</p>
+      </div>
+      <div class="card">
+        <h2>Key topics</h2>
+        <ul class="topics">
+          <li><span class="tag">Repeat first</span><span>Four functions of an operating system</span></li>
+          <li><span>Compiler vs interpreter</span></li>
+          <li><span>System software vs application software</span></li>
+          <li><span>Types and families of operating systems</span></li>
+        </ul>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn btn-primary" id="to-deadlines">Check deadlines</button>
+        <button type="button" class="btn btn-secondary" id="sum-back">Back to my file</button>
+      </div>
+    </section>
+
+    <!-- 4 Deadlines -->
+    <section id="screen-deadlines" aria-labelledby="h-dl" hidden>
+      <span class="demo-chip">Demo data</span>
+      <h1 id="h-dl" tabindex="-1">Check the deadlines we found</h1>
+      <p class="lead">The analysis can make mistakes. Confirm each deadline, fix the date if it is wrong, or untick it to leave it out.</p>
+      <ul class="dl-list" id="dl-list"></ul>
+      <div id="dl-error" class="error" role="alert" hidden></div>
+      <div class="actions">
+        <button type="button" class="btn btn-primary" id="to-todo">Add to to-do list</button>
+        <button type="button" class="btn btn-secondary" id="dl-back">Back to summary</button>
+      </div>
+    </section>
+
+    <!-- 5 To-do -->
+    <section id="screen-todo" aria-labelledby="h-todo" hidden>
+      <h1 id="h-todo" tabindex="-1">Your to-do list</h1>
+      <p class="lead">Tick tasks as you finish them.</p>
+      <div class="todo-group"><h2>Deadlines</h2><ul class="todo" id="todo-dl"></ul></div>
+      <div class="todo-group"><h2>Repeat after the lecture</h2><ul class="todo" id="todo-rep"></ul></div>
+      <div class="actions">
+        <button type="button" class="btn btn-primary" id="to-reminder">Set reminder</button>
+        <button type="button" class="btn btn-secondary" id="todo-back">Back to deadlines</button>
+      </div>
+    </section>
+
+    <!-- 6 Reminder -->
+    <section id="screen-reminder" aria-labelledby="h-rem" hidden>
+      <h1 id="h-rem" tabindex="-1">Set a reminder</h1>
+      <p class="lead">Choose which deadline to be reminded about, and when.</p>
+      <fieldset><legend>Deadline</legend><div id="rem-dl"></div></fieldset>
+      <fieldset>
+        <legend>Remind me</legend>
+        <label class="opt"><input type="radio" name="when" value="1 day before" checked><span>1 day before<span class="o-sub">Good for labs and homework</span></span></label>
+        <label class="opt"><input type="radio" name="when" value="3 hours before"><span>3 hours before<span class="o-sub">Good for quizzes</span></span></label>
+        <label class="opt"><input type="radio" name="when" value="1 hour before"><span>1 hour before<span class="o-sub">Last call</span></span></label>
+      </fieldset>
+      <div id="rem-notice" class="notice" role="alert" hidden></div>
+      <div class="actions">
+        <button type="button" class="btn btn-primary" id="turn-on">Turn on reminder</button>
+        <button type="button" class="btn btn-secondary" id="rem-back">Back to to-do list</button>
+      </div>
+    </section>
+
+    <!-- 7 Success -->
+    <section id="screen-success" aria-labelledby="h-ok" hidden>
+      <div class="success-mark" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>
+      <h1 id="h-ok" tabindex="-1">Reminder is on</h1>
+      <div class="summary-box" id="ok-box"></div>
+      <div class="actions">
+        <button type="button" class="btn btn-primary" id="ok-todo">View to-do list</button>
+        <button type="button" class="btn btn-secondary" id="ok-another">Upload another lecture</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+(function () {
+  var MAX = 200 * 1024 * 1024;
+  var ALLOWED = ['mp3', 'm4a', 'wav', 'pdf', 'pptx', 'docx', 'txt'];
+  var $ = function (id) { return document.getElementById(id); };
+  var input = $('file-input'), drop = $('drop'), errBox = $('error');
+  var current = null, timer = null, reminder = null;
+
+  /* ---- demo data ---- */
+  function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function addDays(n) { var d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + n); return d; }
+  function nextFriday() { var d = new Date(); d.setHours(0, 0, 0, 0); var add = (5 - d.getDay() + 7) % 7; if (add === 0) add = 7; d.setDate(d.getDate() + add); return d; }
+  var deadlines = [];
+  function resetDeadlines() {
+    deadlines = [
+      { id: 'lab', title: 'Assignment 2: UX Sprint', quote: '"Assignment 2 is due the day before your practical class, by 21:00."', date: iso(nextFriday()), on: true },
+      { id: 'quiz', title: 'Short quiz on operating systems', quote: '"There will be a short quiz on operating systems soon. I will tell you the day later."', date: '', on: true, note: 'We could not find an exact date.' },
+      { id: 'erd', title: 'Worksheet: compilers and interpreters', quote: '"The worksheet on compilers and interpreters is due in two weeks."', date: iso(addDays(14)), on: true }
+    ];
+  }
+  var repeatTasks = [
+    { title: 'Repeat the four OS functions: memory, processor, device and file management', sub: 'Slides 30 to 36' },
+    { title: 'Learn the difference between a compiler and an interpreter', sub: 'Slides 20 to 23' },
+    { title: 'Review the OS families and their examples', sub: 'Slide 46' }
+  ];
+  var checked = {};
+
+  function fmtDate(s) {
+    if (!s) return '';
+    var p = s.split('-');
+    return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+  function fmtSize(b) { return b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB'; }
+  function ext(n) { var p = n.split('.'); return p.length > 1 ? p.pop().toLowerCase() : ''; }
+
+  /* ---- navigation ---- */
+  var stepOf = { upload: 1, processing: 2, summary: 3, deadlines: 3, todo: 4, reminder: 4, success: 4 };
+  var headOf = { upload: 'h-upload', processing: 'h-proc', summary: 'h-sum', deadlines: 'h-dl', todo: 'h-todo', reminder: 'h-rem', success: 'h-ok' };
+  function show(name) {
+    Object.keys(stepOf).forEach(function (s) { $('screen-' + s).hidden = (s !== name); });
+    var idx = stepOf[name];
+    [1, 2, 3, 4].forEach(function (n) {
+      var li = $('st' + n);
+      li.classList.toggle('done', n < idx);
+      if (n === idx) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
+    });
+    $(headOf[name]).focus();
+    window.scrollTo(0, 0);
+  }
+
+  /* ---- upload ---- */
+  function showError(t, x) {
+    errBox.innerHTML = '<strong></strong><span></span>';
+    errBox.firstChild.textContent = t; errBox.lastChild.textContent = x; errBox.hidden = false;
+  }
+  function clearError() { errBox.hidden = true; errBox.textContent = ''; }
+  function handleFile(f) {
+    clearError();
+    if (!f) return;
+    var e = ext(f.name);
+    if (ALLOWED.indexOf(e) === -1) { showError("This file type isn't supported", 'Choose an MP3, M4A, WAV, PDF, PPTX, DOCX or TXT file.'); return; }
+    if (f.size > MAX) { showError('This file is too large', 'The limit is 200 MB. Your file is ' + fmtSize(f.size) + '. Try a shorter recording.'); return; }
+    if (f.size === 0) { showError('This file is empty', 'Choose a file that has content.'); return; }
+    current = f;
+    $('file-name').textContent = f.name;
+    $('file-sub').textContent = fmtSize(f.size) + ' · ' + e.toUpperCase();
+    $('file-badge').textContent = e.toUpperCase();
+    $('pick-area').hidden = true; $('selected').hidden = false;
+    $('analyze').focus();
+  }
+  function resetPick() { current = null; input.value = ''; clearError(); $('selected').hidden = true; $('pick-area').hidden = false; }
+
+  drop.addEventListener('click', function () { input.click(); });
+  input.addEventListener('change', function () { handleFile(input.files[0]); });
+  ['dragenter', 'dragover'].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add('over'); }); });
+  ['dragleave', 'drop'].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove('over'); }); });
+  drop.addEventListener('drop', function (e) { handleFile(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]); });
+  $('remove').addEventListener('click', function () { resetPick(); drop.focus(); });
+
+  /* ---- processing (simulated) ---- */
+  var msgs = [[0, 'Reading the file…'], [35, 'Finding topics…'], [70, 'Looking for deadlines…'], [90, 'Almost done…']];
+  function setProgress(p) {
+    $('bar-fill').style.width = p + '%'; $('bar').setAttribute('aria-valuenow', p);
+    var m = msgs[0][1]; msgs.forEach(function (x) { if (p >= x[0]) m = x[1]; });
+    $('proc-status').textContent = m;
+  }
+  $('analyze').addEventListener('click', function () {
+    $('proc-file').textContent = current.name;
+    var p = 0; setProgress(0); show('processing');
+    timer = setInterval(function () {
+      p += 4; setProgress(p);
+      if (p >= 100) { clearInterval(timer); timer = null; $('sum-file').textContent = 'From: ' + current.name; resetDeadlines(); checked = {}; show('summary'); }
+    }, 100);
+  });
+  $('cancel').addEventListener('click', function () { if (timer) { clearInterval(timer); timer = null; } show('upload'); $('analyze').focus(); });
+
+  /* ---- summary ---- */
+  $('sum-back').addEventListener('click', function () { show('upload'); $('analyze').focus(); });
+  $('to-deadlines').addEventListener('click', function () { renderDeadlines(); show('deadlines'); });
+
+  /* ---- deadlines ---- */
+  function renderDeadlines() {
+    var ul = $('dl-list'); ul.innerHTML = '';
+    deadlines.forEach(function (d) {
+      var li = document.createElement('li'); li.className = 'dl' + (d.on ? '' : ' off'); li.id = 'dl-' + d.id;
+      var head = document.createElement('label'); head.className = 'dl-head';
+      var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = d.on;
+      var t = document.createElement('span'); t.textContent = d.title;
+      head.appendChild(cb); head.appendChild(t);
+      var q = document.createElement('p'); q.className = 'quote'; q.textContent = 'From the lecture: ' + d.quote;
+      var wrap = document.createElement('div'); wrap.className = 'dl-date';
+      var lab = document.createElement('label'); lab.setAttribute('for', 'date-' + d.id); lab.textContent = 'Due date';
+      var di = document.createElement('input'); di.type = 'date'; di.id = 'date-' + d.id; di.value = d.date;
+      wrap.appendChild(lab); wrap.appendChild(di);
+      li.appendChild(head); li.appendChild(q); li.appendChild(wrap);
+      if (d.note && !d.date) { var n = document.createElement('p'); n.className = 'detect'; n.textContent = d.note + ' Please choose a date.'; li.appendChild(n); }
+      var er = document.createElement('p'); er.className = 'dl-err'; er.id = 'err-' + d.id; er.hidden = true; li.appendChild(er);
+      cb.addEventListener('change', function () { d.on = cb.checked; li.classList.toggle('off', !d.on); if (!d.on) { di.classList.remove('bad'); er.hidden = true; } });
+      di.addEventListener('change', function () { d.date = di.value; di.classList.remove('bad'); er.hidden = true; $('dl-error').hidden = true; });
+      ul.appendChild(li);
+    });
+  }
+  $('dl-back').addEventListener('click', function () { show('summary'); });
+  $('to-todo').addEventListener('click', function () {
+    var today = iso(new Date()), bad = null;
+    var eb = $('dl-error'); eb.hidden = true;
+    deadlines.forEach(function (d) {
+      var di = $('date-' + d.id), er = $('err-' + d.id);
+      di.classList.remove('bad'); er.hidden = true;
+      if (!d.on) return;
+      var msg = '';
+      if (!d.date) msg = 'Choose a due date, or untick this deadline to leave it out.';
+      else if (d.date < today) msg = 'This date has already passed. Choose a date from today onwards.';
+      if (msg) { di.classList.add('bad'); er.textContent = msg; er.hidden = false; if (!bad) bad = di; }
+    });
+    if (bad) {
+      eb.innerHTML = '<strong></strong><span></span>';
+      eb.firstChild.textContent = 'Some deadlines need your attention';
+      eb.lastChild.textContent = 'Fix the dates marked in red, then try again.';
+      eb.hidden = false; bad.focus(); return;
+    }
+    if (!deadlines.some(function (d) { return d.on; })) {
+      eb.innerHTML = '<strong></strong><span></span>';
+      eb.firstChild.textContent = 'No deadlines selected';
+      eb.lastChild.textContent = 'Tick at least one deadline to add it to your to-do list.';
+      eb.hidden = false; return;
+    }
+    renderTodo(); show('todo');
+  });
+
+  /* ---- to-do ---- */
+  function activeDeadlines() { return deadlines.filter(function (d) { return d.on; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; }); }
+  function todoItem(id, title, sub) {
+    var li = document.createElement('li'), lab = document.createElement('label');
+    var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!checked[id];
+    cb.addEventListener('change', function () { checked[id] = cb.checked; });
+    var s = document.createElement('span'), t = document.createElement('span'), u = document.createElement('span');
+    t.className = 't-title'; t.textContent = title; u.className = 't-sub'; u.textContent = sub;
+    s.appendChild(t); s.appendChild(u); lab.appendChild(cb); lab.appendChild(s); li.appendChild(lab); return li;
+  }
+  function renderTodo() {
+    var a = $('todo-dl'), b = $('todo-rep'); a.innerHTML = ''; b.innerHTML = '';
+    activeDeadlines().forEach(function (d) { a.appendChild(todoItem('d' + d.id, d.title, 'Due ' + fmtDate(d.date))); });
+    repeatTasks.forEach(function (r, i) { b.appendChild(todoItem('r' + i, r.title, r.sub)); });
+  }
+  $('todo-back').addEventListener('click', function () { renderDeadlines(); show('deadlines'); });
+  $('to-reminder').addEventListener('click', function () { renderReminder(); show('reminder'); });
+
+  /* ---- reminder ---- */
+  function renderReminder() {
+    var box = $('rem-dl'); box.innerHTML = ''; $('rem-notice').hidden = true;
+    activeDeadlines().forEach(function (d, i) {
+      var lab = document.createElement('label'); lab.className = 'opt';
+      var r = document.createElement('input'); r.type = 'radio'; r.name = 'dl'; r.value = d.id; if (i === 0) r.checked = true;
+      var s = document.createElement('span'); s.textContent = d.title;
+      var sub = document.createElement('span'); sub.className = 'o-sub'; sub.textContent = 'Due ' + fmtDate(d.date) + (i === 0 ? ' (nearest)' : '');
+      s.appendChild(sub); lab.appendChild(r); lab.appendChild(s); box.appendChild(lab);
+    });
+  }
+  function finish(withNotifications) {
+    var id = document.querySelector('input[name=dl]:checked').value;
+    var when = document.querySelector('input[name=when]:checked').value;
+    var d = deadlines.filter(function (x) { return x.id === id; })[0];
+    reminder = { d: d, when: when, notif: withNotifications };
+    var box = $('ok-box'); box.innerHTML = '';
+    var p1 = document.createElement('p'); p1.style.fontWeight = '600'; p1.textContent = d.title;
+    var p2 = document.createElement('p'); p2.textContent = 'Due ' + fmtDate(d.date) + '. Reminder: ' + when + '.';
+    box.appendChild(p1); box.appendChild(p2);
+    if (!withNotifications) {
+      var p3 = document.createElement('p'); p3.style.marginTop = '8px';
+      p3.textContent = 'Notifications are off on this device, so you will see this reminder inside Lecture+ only.';
+      box.appendChild(p3);
+    }
+    show('success');
+  }
+  $('turn-on').addEventListener('click', function () {
+    var n = $('rem-notice'); n.hidden = true;
+    if (!('Notification' in window)) { blocked('Notifications are not available in this browser.'); return; }
+    if (Notification.permission === 'granted') { ok(); return; }
+    if (Notification.permission === 'denied') { blocked('Notifications are blocked for this site.'); return; }
+    try {
+      var r = Notification.requestPermission(function (perm) { perm === 'granted' ? ok() : blocked('You did not allow notifications.'); });
+      if (r && r.then) r.then(function (perm) { perm === 'granted' ? ok() : blocked('You did not allow notifications.'); });
+    } catch (e) { blocked('Notifications could not be turned on here.'); }
+  });
+  function ok() {
+    try { new Notification('Lecture+ reminder is on', { body: 'We will remind you before your deadline.' }); } catch (e) {}
+    finish(true);
+  }
+  function blocked(reason) {
+    var n = $('rem-notice');
+    n.innerHTML = '<strong></strong><span></span><div class="actions"></div>';
+    n.firstChild.textContent = reason;
+    n.children[1].textContent = 'You can allow notifications in your browser settings and try again, or save the reminder inside Lecture+ only.';
+    var a = n.lastChild;
+    var b1 = document.createElement('button'); b1.type = 'button'; b1.className = 'btn btn-primary'; b1.textContent = 'Save without notifications';
+    b1.addEventListener('click', function () { finish(false); });
+    var b2 = document.createElement('button'); b2.type = 'button'; b2.className = 'btn btn-secondary'; b2.textContent = 'Try again';
+    b2.addEventListener('click', function () { $('turn-on').click(); });
+    a.appendChild(b1); a.appendChild(b2);
+    n.hidden = false; b1.focus();
+  }
+  $('rem-back').addEventListener('click', function () { renderTodo(); show('todo'); });
+
+  /* ---- success ---- */
+  $('ok-todo').addEventListener('click', function () { renderTodo(); show('todo'); });
+  $('ok-another').addEventListener('click', function () { resetPick(); show('upload'); });
+})();
+</script>
+</body>
+</html>
