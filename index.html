@@ -8,9 +8,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #F6F7FA; --surface: #FFFFFF; --ink: #1F2A44; --ink-soft: #4E5A75; --line: #D5DAE5;
-  --mark: #F2C94C; --mark-ink: #1F2A44; --ok: #1E7A4F; --ok-bg: #E6F4EC;
-  --err: #B3261E; --err-bg: #FCECEA; --warn-bg: #FFF6DA; --focus: #2F5BEA;
+  --bg: #FAFCFF; --surface: #FFFFFF; --ink: #1E293B; --ink-soft: #64748B; --line: #E2ECF9;
+  --mark: #4C93F0; --mark-ink: #FFFFFF; --mark-tint: #EFF6FF; --ok: #1E7A4F; --ok-bg: #E6F4EC;
+  --err: #B3261E; --err-bg: #FCECEA; --warn-bg: #EFF6FF; --focus: #4C93F0;
   --font-head: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
   --font-body: "Public Sans", "Segoe UI", system-ui, sans-serif;
   box-sizing: border-box;
@@ -19,13 +19,15 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #131A2B; --surface: #1B2438; --ink: #EEF1F8; --ink-soft: #A9B3CA; --line: #34405C;
-    --err: #FF8A80; --err-bg: #3A1F24; --ok: #5FD09B; --ok-bg: #16352A; --warn-bg: #3A3216; --focus: #8AA8FF;
+    --bg: #0E1626; --surface: #16233B; --ink: #EAF2FF; --ink-soft: #9FB4D8; --line: #28395B;
+    --mark: #5B9DF5; --mark-ink: #0B1220; --mark-tint: #16283F;
+    --err: #FF8A80; --err-bg: #3A1F24; --ok: #5FD09B; --ok-bg: #16352A; --warn-bg: #16283F; --focus: #5B9DF5;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #131A2B; --surface: #1B2438; --ink: #EEF1F8; --ink-soft: #A9B3CA; --line: #34405C;
-  --err: #FF8A80; --err-bg: #3A1F24; --ok: #5FD09B; --ok-bg: #16352A; --warn-bg: #3A3216; --focus: #8AA8FF;
+  --bg: #0E1626; --surface: #16233B; --ink: #EAF2FF; --ink-soft: #9FB4D8; --line: #28395B;
+  --mark: #5B9DF5; --mark-ink: #0B1220; --mark-tint: #16283F;
+  --err: #FF8A80; --err-bg: #3A1F24; --ok: #5FD09B; --ok-bg: #16352A; --warn-bg: #16283F; --focus: #5B9DF5;
 }
 html { height: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); }
 *, *::before, *::after { box-sizing: inherit; }
@@ -50,10 +52,11 @@ h2 { font-family: var(--font-head); font-size: 1.15rem; margin: 0 0 8px; }
 
 /* Upload */
 .drop { display: block; width: 100%; text-align: left; cursor: pointer; background: var(--surface); border: 2px dashed var(--line); border-radius: 14px; padding: 32px 22px; color: var(--ink); font: inherit; transition: border-color .15s, background .15s; }
-.drop:hover, .drop.over { border-color: var(--ink); background: color-mix(in srgb, var(--mark) 14%, var(--surface)); }
+.drop:hover, .drop.over { border-color: var(--mark); background: var(--mark-tint); }
 .drop .big { font-family: var(--font-head); font-weight: 600; font-size: 1.2rem; display: block; margin-bottom: 4px; }
 .drop .small { color: var(--ink-soft); font-size: .9rem; }
-.drop-icon { width: 44px; height: 44px; margin-bottom: 14px; }
+.icon-circle { display: grid; place-items: center; width: 72px; height: 72px; border-radius: 50%; background: var(--mark-tint); margin: 0 auto 14px; }
+.drop-icon { width: 34px; height: 34px; }
 input[type=file] { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
 .formats { margin: 12px 0 0; font-size: .875rem; color: var(--ink-soft); }
 
@@ -115,8 +118,8 @@ a.btn.linkbtn { display: inline-flex; align-items: center; text-decoration: none
 fieldset { border: 0; padding: 0; margin: 0 0 20px; }
 legend { font-family: var(--font-head); font-weight: 600; font-size: 1.05rem; padding: 0; margin-bottom: 10px; }
 .opt { display: flex; gap: 12px; align-items: flex-start; background: var(--surface); border: 2px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; cursor: pointer; }
-.opt:has(input:checked) { border-color: var(--ink); }
-.opt input { width: 20px; height: 20px; accent-color: var(--ink); margin-top: 2px; flex: none; }
+.opt:has(input:checked) { border-color: var(--mark); background: var(--mark-tint); }
+.opt input { width: 20px; height: 20px; accent-color: var(--mark); margin-top: 2px; flex: none; }
 .opt .o-sub { display: block; color: var(--ink-soft); font-size: .875rem; }
 
 .success-mark { width: 56px; height: 56px; border-radius: 50%; background: var(--ok-bg); color: var(--ok); display: grid; place-items: center; margin-bottom: 14px; }
@@ -145,7 +148,7 @@ legend { font-family: var(--font-head); font-weight: 600; font-size: 1.05rem; pa
       <div id="pick-area">
         <input type="file" id="file-input" accept=".mp3,.m4a,.wav,.pdf,.pptx,.docx,.txt" aria-describedby="formats">
         <button type="button" class="drop" id="drop" aria-label="Choose a lecture file from your device">
-          <svg class="drop-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 32V10M24 10l-9 9M24 10l9 9"/><path d="M8 32v6a2 2 0 002 2h28a2 2 0 002-2v-6"/></svg>
+          <span class="icon-circle" aria-hidden="true"><svg class="drop-icon" viewBox="0 0 48 48" fill="none" stroke="var(--mark)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M24 32V10M24 10l-9 9M24 10l9 9"/><path d="M8 32v6a2 2 0 002 2h28a2 2 0 002-2v-6"/></svg></span>
           <span class="big">Choose a file</span>
           <span class="small">Tap to browse your device, or drag a file here.</span>
         </button>
@@ -231,6 +234,7 @@ legend { font-family: var(--font-head); font-weight: 600; font-size: 1.05rem; pa
         <legend>How</legend>
         <label class="opt"><input type="radio" name="how" value="calendar" checked><span>Add to calendar<span class="o-sub">Works even when Lecture+ is closed</span></span></label>
         <label class="opt"><input type="radio" name="how" value="notif"><span>Browser notification<span class="o-sub">Only while Lecture+ is open in your browser</span></span></label>
+        <label class="opt"><input type="radio" name="how" value="lms"><span>Sync with LMS<span class="o-sub">Requested by testers · not connected in this prototype</span></span></label>
       </fieldset>
       <fieldset>
         <legend>Remind me</legend>
@@ -522,14 +526,26 @@ legend { font-family: var(--font-head); font-weight: 600; font-size: 1.05rem; pa
       if (r && r.then) r.then(function (perm) { perm === 'granted' ? ok() : blocked('You did not allow notifications.'); });
     } catch (e) { blocked('Notifications could not be turned on here.'); }
   }
+  function lmsDemo() {
+    var n = $('rem-notice');
+    n.innerHTML = '<strong></strong><span></span><div class="actions"></div>';
+    n.firstChild.textContent = 'LMS sync is not connected yet';
+    n.children[1].textContent = 'This is one of the improvements testers asked for. It is not built in this prototype. You can add the deadline to your calendar instead.';
+    var a = n.lastChild;
+    var b1 = document.createElement('button'); b1.type = 'button'; b1.className = 'btn btn-primary'; b1.textContent = 'Add to calendar instead';
+    b1.addEventListener('click', function () { document.querySelector('input[name=how][value=calendar]').checked = true; $('turn-on').textContent = 'Add to calendar'; n.hidden = true; calendar(); });
+    a.appendChild(b1);
+    n.hidden = false; b1.focus();
+  }
   $('turn-on').addEventListener('click', function () {
     $('rem-notice').hidden = true;
     var how = document.querySelector('input[name=how]:checked').value;
-    if (how === 'calendar') calendar(); else notify();
+    if (how === 'calendar') calendar(); else if (how === 'notif') notify(); else lmsDemo();
   });
+  var howLabels = { calendar: 'Add to calendar', notif: 'Turn on notification', lms: 'Sync with LMS' };
   Array.prototype.forEach.call(document.querySelectorAll('input[name=how]'), function (r) {
     r.addEventListener('change', function () {
-      $('turn-on').textContent = r.value === 'calendar' ? 'Add to calendar' : 'Turn on notification';
+      $('turn-on').textContent = howLabels[r.value];
       $('rem-notice').hidden = true;
     });
   });
