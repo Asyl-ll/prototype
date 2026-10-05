@@ -2,6 +2,21 @@
 
 Веб-сервис для учебного проекта: запись или файл → текст → конспект → задания, тест и следующие темы. Работает в браузере на компьютере и телефоне.
 
+**Опубликован:** https://lecture-plus-ict.vercel.app
+
+Вход — с кодом доступа, заданным на локальной странице настройки. Платёжные тарифы не подключались. Прямое размещение через Vercel CLI; автопубликация из GitHub пока не настроена.
+
+## Показ на защите (2–3 минуты)
+
+1. Открыть сайт, ввести код команды, нажать Unlock AI.
+2. Нажать Try sample notes или загрузить короткую запись своей лекции. Выбрать English и проверить дату лекции. Подтвердить разрешение на обработку материала.
+3. Нажать Analyze lecture. Показать конспект и путь Review → Next → Later. Объяснить: будущие темы являются рекомендациями.
+4. Ответить на вопрос теста. Нажать Check tasks and deadlines, сверить цитату и срок. Save tasks.
+5. Выбрать Set a reminder → Download calendar file. Показать, что событие требует импорта в календарь.
+6. Открыть History и вернуться к сохранённой лекции. Заранее скачать Markdown на случай проблем с интернетом или квотой.
+
+Короткий текст выступления B1: “Lecture+ is a web service for students. We upload a lecture or paste our notes. AI finds the main ideas and makes a short study guide. It also creates practice questions and suggests what to learn next. We check every deadline using a quote from the lecture. Then we can save tasks and add a reminder to our calendar. AI can make mistakes, so the student makes the final decision.”
+
 ## Запуск
 
 Нужен Node.js 22.12+ (на этом компьютере установлен 24).
