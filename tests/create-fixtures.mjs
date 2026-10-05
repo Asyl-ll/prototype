@@ -1,0 +1,18 @@
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { zipSync, strToU8 } from 'fflate';
+import { wav } from '../src/extract.mjs';
+import { source } from './fixture.mjs';
+mkdirSync('test-results/fixtures', { recursive: true });
+writeFileSync('test-results/fixtures/lecture.txt', source);
+writeFileSync('test-results/fixtures/lecture.docx', zipSync({ 'word/document.xml': strToU8(`<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>${source}</w:t></w:r></w:p></w:body></w:document>`) }));
+writeFileSync('test-results/fixtures/lecture.pptx', zipSync({ 'ppt/slides/slide1.xml': strToU8(`<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><p:cSld><p:spTree><p:sp><p:txBody><a:p><a:r><a:t>${source}</a:t></a:r></a:p></p:txBody></p:sp></p:spTree></p:cSld></p:sld>`) }));
+const samples = new Float32Array(16000 * 2); for (let i = 0; i < samples.length; i++) samples[i] = Math.sin(i * 2 * Math.PI * 440 / 16000) * 0.1;
+writeFileSync('test-results/fixtures/tone.wav', wav(samples));
+const text = `BT /F1 10 Tf 40 750 Td (${source}) Tj ET`;
+const objects = [ '<< /Type /Catalog /Pages 2 0 R >>', '<< /Type /Pages /Kids [3 0 R] /Count 1 >>', '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 1200 800] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>', '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>', `<< /Length ${text.length} >>\nstream\n${text}\nendstream` ];
+let pdf = '%PDF-1.4\n'; const offsets = [];
+objects.forEach((obj, i) => { offsets.push(Buffer.byteLength(pdf)); pdf += `${i + 1} 0 obj\n${obj}\nendobj\n`; });
+const xref = Buffer.byteLength(pdf);
+pdf += `xref\n0 6\n0000000000 65535 f \n${offsets.map(offset => String(offset).padStart(10, '0') + ' 00000 n ').join('\n')}\ntrailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
+writeFileSync('test-results/fixtures/lecture.pdf', pdf);
+console.log('Created synthetic document and audio fixtures (no personal data).');

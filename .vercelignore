@@ -1,0 +1,7 @@
+.env*
+.git/
+tests/
+test-results/
+docs/
+scripts/
+README.md
