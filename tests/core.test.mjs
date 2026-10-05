@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { validDate, hasEvidence, groundedDeadlines, splitText } from '../shared/content.mjs';
-import { buildIcs, googleUrl, reminderTime } from '../shared/calendar.mjs';
+import { buildIcs, reminderTime } from '../shared/calendar.mjs';
 import { validateResult, resultSchema } from '../server/analysis.mjs';
 import { issueToken, authenticated, checkOrigin } from '../server/http.mjs';
 import session from '../api/session.js';
@@ -47,7 +47,6 @@ test('ICS escapes injection, folds Unicode by bytes and uses absolute UTC time',
   assert.ok(text.includes('TRIGGER:-P1D'));
   assert.ok(text.split('\r\n').every(line => Buffer.byteLength(line) <= 75));
   assert.match(text, /DTSTART:\d{8}T\d{6}Z/);
-  assert.ok(googleUrl(deadline).startsWith('https://calendar.google.com/calendar/render?'));
   assert.equal(reminderTime(studyGuide.teacherAssignments[0], '1 hour before'), new Date('2030-10-12T18:00:00').getTime() - 3600000);
   assert.throws(() => buildIcs({ ...deadline, time: '' }, '1 day before', 'id'));
 });

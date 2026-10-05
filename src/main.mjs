@@ -2,7 +2,7 @@ import './style.css';
 import { api } from './api.mjs';
 import { extract, validateFile, validateText, extension } from './extract.mjs';
 import { splitText, localDate, validDate, validTime } from '../shared/content.mjs';
-import { buildIcs, googleUrl, reminderTime } from '../shared/calendar.mjs';
+import { buildIcs, reminderTime } from '../shared/calendar.mjs';
 import { normalizeResult } from '../shared/result.mjs';
 import * as storage from './storage.mjs';
 
@@ -320,14 +320,13 @@ $('turn-on').onclick = async () => {
     if (mode === 'calendar') {
       lastCalendar = { content: buildIcs(d, when, `${lecture.id}-${d.id}`), filename: `lecture-deadline-${d.id}.ics` };
       download(lastCalendar.content, lastCalendar.filename, 'text/calendar;charset=utf-8');
-      $('cal-google').href = googleUrl(d);
     } else {
       if (!window.Notification) throw new Error('This browser does not support notifications. Use a calendar reminder.');
       if (await Notification.requestPermission() !== 'granted') throw new Error('Notifications were not allowed. Use a calendar reminder or change browser settings.');
       storage.saveReminders([...storage.reminders().filter(r => !(r.lectureId === lecture.id && r.deadlineId === d.id)), { id: crypto.randomUUID(), lectureId: lecture.id, deadlineId: d.id, title: d.title, at, due: formatDue(d), fired: false }]);
     }
     $('h-ok').textContent = mode === 'calendar' ? 'Your calendar file is ready' : 'Browser reminder saved';
-    $('ok-box').replaceChildren(el('p', d.title), el('p', `Due ${formatDue(d)}. Reminder: ${when.toLowerCase()}.`), el('p', mode === 'calendar' ? 'Import the downloaded file and check the alarm in your calendar. If you use the Google Calendar draft, set its reminder and click Save there.' : 'Keep this page open for the notification. Your browser may delay it in a background tab.'));
+    $('ok-box').replaceChildren(el('p', d.title), el('p', `Due ${formatDue(d)}. Reminder: ${when.toLowerCase()}.`), el('p', mode === 'calendar' ? 'Import the downloaded file and check the alarm in your calendar.' : 'Keep this page open for the notification. Your browser may delay it in a background tab.'));
     $('cal-actions').hidden = mode !== 'calendar'; show('success');
   } catch (error) { message('rem-notice', error.message); }
 };

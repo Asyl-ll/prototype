@@ -32,8 +32,3 @@ export function buildIcs(deadline, when, uid, now = new Date()) {
     'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${escape(deadline.title)}`, `TRIGGER:${trigger}`, 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR', ''
   ].map(fold).join('\r\n');
 }
-export function googleUrl(deadline) {
-  const due = dueDate(deadline);
-  const params = new URLSearchParams({ action: 'TEMPLATE', text: deadline.title, dates: `${stamp(due)}/${stamp(new Date(due.getTime() + 900000))}`, details: `From Lecture+. Check the date and set your reminder before saving.\n${deadline.quote || ''}` });
-  return `https://calendar.google.com/calendar/render?${params}`;
-}
