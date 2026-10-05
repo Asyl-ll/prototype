@@ -10,10 +10,11 @@
 
 1. Открыть сайт, ввести код команды, нажать Unlock AI.
 2. Нажать Try sample notes или загрузить короткую запись своей лекции. Выбрать English и проверить дату лекции. Подтвердить разрешение на обработку материала.
-3. Нажать Analyze lecture. Показать конспект и путь Review → Next → Later. Объяснить: будущие темы являются рекомендациями.
-4. Ответить на вопрос теста. Нажать Check tasks and deadlines, сверить цитату и срок. Save tasks.
-5. Выбрать Set a reminder → Download calendar file. Показать, что событие требует импорта в календарь.
-6. Открыть History и вернуться к сохранённой лекции. Заранее скачать Markdown на случай проблем с интернетом или квотой.
+3. Нажать Analyze lecture. Показать полный анализ: обзор, понятия, объяснения, примеры, связи и пункты для повторения.
+4. Перейти в What may come next и объяснить, что будущие темы являются рекомендациями. Затем пройти отдельный Quiz.
+5. Открыть Tasks: показать отдельные блоки Teacher assignments и Optional AI practice. Раскрыть Check details у задания, сверить цитату и срок.
+6. Выбрать Set a reminder → Download calendar file. Показать, что событие требует импорта в календарь.
+7. Открыть History и вернуться к сохранённой лекции. Заранее скачать Markdown на случай проблем с интернетом или квотой.
 
 Короткий текст выступления B1: “Lecture+ is a web service for students. We upload a lecture or paste our notes. AI finds the main ideas and makes a short study guide. It also creates practice questions and suggests what to learn next. We check every deadline using a quote from the lecture. Then we can save tasks and add a reminder to our calendar. AI can make mistakes, so the student makes the final decision.”
 
@@ -45,8 +46,10 @@ npm run dev
 
 - Аудиофайлы MP3/M4A/WAV/WEBM/OGG/MP4 и запись микрофона с разрешения браузера.
 - PDF с текстовым слоем, DOCX, PPTX, TXT, вставка текста. Сканы требуют OCR заранее.
-- Конспект, темы, учебные задания, тест с пояснениями, путь Review → Next → Later. Английский B1, русский или казахский язык результата.
-- Сроки с дословной цитатой из лекции, ручная проверка/редактирование и добавление своих сроков. Неизвестная дата не выдумывается намеренно; все ответы AI всё равно нужно проверить.
+- Полный анализ лекции: обзор, ключевые понятия, объяснения, примеры, связи между идеями и материал для повторения. Английский B1, русский или казахский язык результата.
+- Отдельный экран возможных будущих тем с причиной, связью с текущей лекцией, источником предположения и уровнем уверенности.
+- Отдельный квиз с правильным ответом, объяснением и рекомендацией, что повторить после ошибки.
+- Задания преподавателя с дословной цитатой отделены от необязательной AI-практики. Срок показывается компактно, а редактирование скрыто в Check details. Неизвестная дата не выдумывается.
 - До 10 последних лекций в этом браузере, отметки выполненных заданий, ответы на тест, удаление данных.
 - Загрузка Markdown с текстом и результатами, календарь ICS с напоминанием, черновик Google Calendar.
 - Уведомления браузера при открытой странице. Фоновые вкладки могут задерживать таймеры; при повторном открытии показывается пропущенное напоминание.
@@ -65,9 +68,9 @@ npm run dev
 
 **Input:** lecture audio/documents/text, lecture date, selected language, optional course outline.
 
-**Process:** extract text in the browser; split audio into 55-second mono WAV sections; transcribe with Groq Whisper; summarize bounded text sections; generate a validated study guide; keep deadline quotes only when found in source text; let the user check the results.
+**Process:** extract text in the browser; split audio into 55-second mono WAV sections; transcribe with Groq Whisper; analyze structured text sections; merge long lectures without dropping distinct concepts; generate a validated study guide; keep assignment quotes only when found in source text; let the user check the results.
 
-**Output:** summary, key ideas, learning path, quiz, study tasks, editable deadlines, Markdown notes, calendar events and browser reminders.
+**Output:** complete lecture analysis, possible future topics, a separate quiz, teacher assignments, optional AI practice, editable deadlines, Markdown notes, calendar events and browser reminders.
 
 ## Проверка
 

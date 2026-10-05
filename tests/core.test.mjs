@@ -9,6 +9,7 @@ import session from '../api/session.js';
 import analyze from '../api/analyze.js';
 import transcribe from '../api/transcribe.js';
 import { wav, validateFile } from '../src/extract.mjs';
+import { normalizeResult } from '../shared/result.mjs';
 import { source, studyGuide } from './fixture.mjs';
 
 test('dates reject impossible days and tolerate leap years', () => {
@@ -16,9 +17,9 @@ test('dates reject impossible days and tolerate leap years', () => {
 });
 test('deadline evidence must be verbatim in lecture; fabricated dates are removed', () => {
   assert.ok(hasEvidence(source, 'Submit the OS worksheet by 2030-10-12 at 18:00.'));
-  const data = groundedDeadlines([...studyGuide.deadlines, { title: 'Imaginary exam', quote: 'An exam will happen next Monday.', date: '2030-01-01' }], source);
+  const data = groundedDeadlines([...studyGuide.teacherAssignments, { title: 'Imaginary exam', quote: 'An exam will happen next Monday.', date: '2030-01-01' }], source);
   assert.equal(data.length, 1);
-  assert.equal(groundedDeadlines([{ ...studyGuide.deadlines[0], date: '2030-02-30', time: '25:00' }], source)[0].date, '');
+  assert.equal(groundedDeadlines([{ ...studyGuide.teacherAssignments[0], date: '2030-02-30', time: '25:00' }], source)[0].date, '');
 });
 test('splitting preserves every character of a long lecture and respects size', () => {
   const text = source.repeat(400); const chunks = splitText(text);
@@ -32,15 +33,22 @@ test('schema rejects incomplete guides and invalid correct answers', () => {
   assert.throws(() => validateResult({ ...studyGuide, quiz: [{ ...studyGuide.quiz[0], answer: 9 }] }, resultSchema, source));
   assert.equal(validateResult(studyGuide, resultSchema, source).title, 'Operating systems');
 });
+test('old saved guides are normalized into the new learning flow', () => {
+  const old = normalizeResult({ title: 'Legacy', summary: 'Old summary', topics: ['Memory'], tasks: ['Review'], deadlines: studyGuide.teacherAssignments, quiz: studyGuide.quiz, roadmap: { review: ['Basics'], next: ['Scheduling'], later: [] } });
+  assert.equal(old.analysis.overview, 'Old summary');
+  assert.equal(old.teacherAssignments[0].title, 'OS worksheet');
+  assert.equal(old.practiceTasks[0].title, 'Review');
+  assert.equal(old.futureTopics[0].title, 'Scheduling');
+});
 test('ICS escapes injection, folds Unicode by bytes and uses absolute UTC time', () => {
-  const deadline = { ...studyGuide.deadlines[0], title: 'Test, task; \nEND:VEVENT\n' + 'Привет'.repeat(30) };
+  const deadline = { ...studyGuide.teacherAssignments[0], title: 'Test, task; \nEND:VEVENT\n' + 'Привет'.repeat(30) };
   const text = buildIcs(deadline, '1 day before', 'test-id', new Date('2026-10-05T10:00:00Z'));
   assert.equal(text.split('\r\nEND:VEVENT').length, 2);
   assert.ok(text.includes('TRIGGER:-P1D'));
   assert.ok(text.split('\r\n').every(line => Buffer.byteLength(line) <= 75));
   assert.match(text, /DTSTART:\d{8}T\d{6}Z/);
   assert.ok(googleUrl(deadline).startsWith('https://calendar.google.com/calendar/render?'));
-  assert.equal(reminderTime(studyGuide.deadlines[0], '1 hour before'), new Date('2030-10-12T18:00:00').getTime() - 3600000);
+  assert.equal(reminderTime(studyGuide.teacherAssignments[0], '1 hour before'), new Date('2030-10-12T18:00:00').getTime() - 3600000);
   assert.throws(() => buildIcs({ ...deadline, time: '' }, '1 day before', 'id'));
 });
 test('file validation and audio encoding enforce actual supported limits', () => {

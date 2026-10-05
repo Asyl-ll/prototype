@@ -9,8 +9,8 @@ globalThis.fetch = async (url, init) => {
     if (String(url).includes('/audio/')) return Response.json({ text: source });
     const request = JSON.parse(init.body), input = JSON.parse(request.messages[1].content);
     const result = request.response_format.json_schema.name === 'lecture_section'
-      ? { notes: 'An OS manages memory, processes, files and devices.', deadlines: studyGuide.deadlines }
-      : { ...studyGuide, summary: `MOCK TEST RESULT — not real AI. ${studyGuide.summary}`, deadlines: input.lecture.includes(studyGuide.deadlines[0].quote) ? studyGuide.deadlines : [] };
+      ? { sectionTitle: 'Operating systems', overview: 'An OS manages computer resources.', keyPoints: ['Memory, processes, devices and files'], examples: ['Windows and Linux'], connections: ['Applications use the OS'], reviewPoints: ['Four OS functions'], futureSeeds: ['Process scheduling'], teacherAssignments: studyGuide.teacherAssignments }
+      : { ...studyGuide, analysis: { ...studyGuide.analysis, overview: `MOCK TEST RESULT — not real AI. ${studyGuide.analysis.overview}` }, teacherAssignments: input.lecture.includes(studyGuide.teacherAssignments[0].quote) ? studyGuide.teacherAssignments : [] };
     return Response.json({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(result) } }] });
   }
   return actualFetch(url, init);
