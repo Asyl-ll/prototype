@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { historyStats, lecturePayload, localHistoryCards } from '../src/cloud-data.mjs';
+import { confirmationRedirect, historyStats, lecturePayload, localHistoryCards } from '../src/cloud-data.mjs';
 
 const lecture = {
   id: '11111111-1111-4111-8111-111111111111',
@@ -34,4 +34,8 @@ test('local cards and statistics preserve visible progress', () => {
   assert.equal(cards[0].score, 1);
   assert.equal(cards[0].total_tasks, 2);
   assert.deepEqual(historyStats(cards), { lectures: 1, quizAverage: 100, completedTasks: 1, totalTasks: 2 });
+});
+
+test('confirmationRedirect sends email confirmations back to the production site', () => {
+  assert.equal(confirmationRedirect('https://lecture-plus-ict.vercel.app/'), 'https://lecture-plus-ict.vercel.app/');
 });

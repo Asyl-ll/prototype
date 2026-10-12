@@ -5,7 +5,7 @@ import { splitText, localDate, validDate, validTime } from '../shared/content.mj
 import { buildIcs, reminderTime } from '../shared/calendar.mjs';
 import { normalizeResult } from '../shared/result.mjs';
 import * as storage from './storage.mjs';
-import { cloudConfigured, currentUser, onAuthChange, signUp, signIn, signOut, profile as loadCloudProfile, enableCloudSync, saveLectureCloud, listCloudHistory, getCloudLecture, deleteCloudLecture } from './cloud.mjs';
+import { cloudConfigured, currentUser, onAuthChange, signUp, resendConfirmation, signIn, signOut, profile as loadCloudProfile, enableCloudSync, saveLectureCloud, listCloudHistory, getCloudLecture, deleteCloudLecture } from './cloud.mjs';
 import { historyStats, localHistoryCards } from './cloud-data.mjs';
 
 const $ = id => document.getElementById(id);
@@ -452,6 +452,15 @@ $('sign-up-form').onsubmit = async event => {
     const data = await signUp({ email: $('sign-up-email').value.trim(), password: $('sign-up-password').value, displayName: $('sign-up-name').value.trim() });
     if (!data.session) setCloudMessage('Account created. Check your email, then sign in.', 'ready');
     else { await refreshCloudAccount(); await renderHistory(); toast('Account created.'); }
+  } catch (error) { setCloudMessage(error.message, 'offline'); }
+};
+$('resend-confirmation').onclick = async () => {
+  const email = $('sign-up-email').value.trim();
+  if (!email) { setCloudMessage('Enter your email first.', 'offline'); $('sign-up-email').focus(); return; }
+  setCloudMessage('Sending a new confirmation email…');
+  try {
+    await resendConfirmation(email);
+    setCloudMessage('New email sent. Use the newest confirmation link.', 'ready');
   } catch (error) { setCloudMessage(error.message, 'offline'); }
 };
 $('sign-out').onclick = async () => { await signOut(); cloudUser = null; cloudProfile = null; cloudRows = []; await refreshCloudAccount(); await renderHistory(); };

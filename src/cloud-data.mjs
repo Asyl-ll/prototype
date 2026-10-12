@@ -2,6 +2,10 @@ import { normalizeResult } from '../shared/result.mjs';
 
 const confidenceNumber = value => ({ high: 0.9, medium: 0.65, exploratory: 0.3 }[value] ?? 0.5);
 
+export function confirmationRedirect(origin) {
+  return `${String(origin).replace(/\/$/, '')}/`;
+}
+
 function sourceType(filename = '') {
   if (filename === 'Pasted lecture notes') return 'text';
   return /\.(mp3|m4a|wav|webm|ogg|mp4)$/i.test(filename) ? 'audio' : 'file';

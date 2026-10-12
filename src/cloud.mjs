@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { lecturePayload } from './cloud-data.mjs';
+import { confirmationRedirect, lecturePayload } from './cloud-data.mjs';
 
 const url = (import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL)?.trim();
 const key = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)?.trim();
@@ -26,7 +26,23 @@ export function onAuthChange(callback) {
 
 export async function signUp({ email, password, displayName }) {
   if (!supabase) fail('Cloud database is not configured yet.');
-  return check(await supabase.auth.signUp({ email, password, options: { data: { display_name: displayName } } }));
+  return check(await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { display_name: displayName },
+      emailRedirectTo: confirmationRedirect(window.location.origin)
+    }
+  }));
+}
+
+export async function resendConfirmation(email) {
+  if (!supabase) fail('Cloud database is not configured yet.');
+  return check(await supabase.auth.resend({
+    type: 'signup',
+    email,
+    options: { emailRedirectTo: confirmationRedirect(window.location.origin) }
+  }));
 }
 
 export async function signIn({ email, password }) {
