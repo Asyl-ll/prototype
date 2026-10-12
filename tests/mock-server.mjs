@@ -1,7 +1,6 @@
 // Isolated test server only. Production never imports this file.
 import { source, studyGuide } from './fixture.mjs';
 process.env.GROQ_API_KEY = 'test-provider-only';
-process.env.APP_ACCESS_CODE = 'test-only-access-code';
 process.env.PORT = '5174';
 const actualFetch = globalThis.fetch;
 globalThis.fetch = async (url, init) => {

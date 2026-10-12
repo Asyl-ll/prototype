@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
-const names = ['GROQ_API_KEY', 'APP_ACCESS_CODE'];
-if (!process.env.GROQ_API_KEY || process.env.APP_ACCESS_CODE?.length < 12) throw new Error('Complete local setup first.');
+const names = ['GROQ_API_KEY'];
+if (!process.env.GROQ_API_KEY) throw new Error('Complete local setup first.');
 for (const name of names) {
   await new Promise((resolve, reject) => {
     const child = spawn('vercel', ['env', 'add', name, 'production', '--sensitive', '--yes'], { shell: process.platform === 'win32', stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true });

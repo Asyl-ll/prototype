@@ -39,20 +39,11 @@ async function refreshSession() {
     const response = await fetch('/api/session', { cache: 'no-store' });
     if (!response.ok) throw new Error();
     session = await response.json();
-    $('access-panel').hidden = !session.configured || session.authenticated;
     $('setup-notice').hidden = session.configured;
-    $('service-status').textContent = session.authenticated ? 'Groq AI · ready to study' : session.configured ? 'Groq AI · access code required' : 'AI setup pending';
-    $('service-status').classList.toggle('ready', session.authenticated);
+    $('service-status').textContent = session.configured ? 'Groq AI · ready to study' : 'AI setup pending';
+    $('service-status').classList.toggle('ready', session.configured);
   } catch { session = {}; $('service-status').textContent = 'Server unavailable · check your connection'; }
 }
-$('access-form').addEventListener('submit', async event => {
-  event.preventDefault(); message('access-error', '');
-  const button = event.submitter; button.disabled = true;
-  try { await api('session', { code: $('access-code').value }); $('access-code').value = ''; await refreshSession(); toast('AI is ready. Add your lecture below.'); }
-  catch (error) { message('access-error', error.message); }
-  finally { button.disabled = false; }
-});
-$('logout').onclick = async () => { try { await api('session', { logout: true }); await refreshSession(); show('upload'); } catch (error) { toast(error.message); } };
 function stopWork() { controller?.abort(); controller = null; if (recorder?.state === 'recording') recorder.stop(); }
 function home() { stopWork(); show('upload'); }
 for (const id of ['home', 'history-new', 'ok-another']) $(id).onclick = home;
@@ -125,7 +116,7 @@ function groupSections(sections, maxLength = 7000) {
 
 $('analyze').onclick = async () => {
   message('error', '');
-  if (!session.authenticated) { await refreshSession(); if (!session.authenticated) { message('error', session.configured ? 'Enter the site access code above to use AI.' : 'AI setup is not finished. Please contact the site owner.'); $('access-code').focus(); return; } }
+  if (!session.configured) { await refreshSession(); if (!session.configured) { message('error', 'AI setup is not finished. Please contact the site owner.'); return; } }
   if (!$('consent').checked) { message('error', 'Confirm that you have permission to send this lecture for AI analysis.'); $('consent').focus(); return; }
   if (!validDate($('lecture-date').value)) { message('error', 'Choose the date of this lecture.'); return; }
   if (!file && !$('lecture-text').value.trim()) { message('error', 'Choose a file, record audio or paste your lecture text.'); return; }

@@ -4,7 +4,7 @@ import { createServer } from 'node:http';
 import { validDate, hasEvidence, groundedDeadlines, splitText } from '../shared/content.mjs';
 import { buildIcs, reminderTime } from '../shared/calendar.mjs';
 import { validateResult, resultSchema } from '../server/analysis.mjs';
-import { issueToken, authenticated, checkOrigin } from '../server/http.mjs';
+import { checkOrigin } from '../server/http.mjs';
 import session from '../api/session.js';
 import analyze from '../api/analyze.js';
 import transcribe from '../api/transcribe.js';
@@ -59,33 +59,25 @@ test('file validation and audio encoding enforce actual supported limits', () =>
   assert.equal(new DataView(bytes.buffer).getUint32(24, true), 16000);
   assert.equal(bytes.length, 50);
 });
-test('API rejects missing setup, unauthenticated access, bad origins and invalid input', async () => {
-  const prior = { key: process.env.GROQ_API_KEY, code: process.env.APP_ACCESS_CODE };
+test('API rejects missing setup, bad origins and invalid input without requiring a site code', async () => {
+  const prior = process.env.GROQ_API_KEY;
   const server = createServer((req, res) => ({ '/api/session': session, '/api/analyze': analyze, '/api/transcribe': transcribe })[new URL(req.url, 'http://localhost').pathname](req, res));
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const base = `http://127.0.0.1:${server.address().port}`;
   const post = (path, data, extra = {}) => fetch(base + path, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: base, ...extra }, body: JSON.stringify(data) });
   try {
-    delete process.env.GROQ_API_KEY; delete process.env.APP_ACCESS_CODE;
+    delete process.env.GROQ_API_KEY;
     assert.equal((await (await fetch(base + '/api/session')).json()).configured, false);
     assert.equal((await post('/api/analyze', {})).status, 503);
-    process.env.GROQ_API_KEY = 'test-only-not-a-real-key'; process.env.APP_ACCESS_CODE = 'test-only-access-code';
-    assert.equal((await post('/api/analyze', {})).status, 401);
-    assert.equal((await post('/api/session', { code: 'wrong' })).status, 401);
-    const login = await post('/api/session', { code: process.env.APP_ACCESS_CODE });
-    assert.equal(login.status, 200);
-    const cookie = login.headers.get('set-cookie').split(';')[0]; assert.match(cookie, /^lecture_session=/);
-    assert.ok(authenticated({ headers: { cookie } }));
-    assert.equal(authenticated({ headers: { cookie: `lecture_session=${issueToken(Date.now() - 86400000)}` } }), false);
-    assert.equal(authenticated({ headers: { cookie: cookie + 'modified' } }), false);
-    assert.equal((await post('/api/analyze', {}, { Cookie: cookie })).status, 400);
-    assert.equal((await post('/api/analyze', {}, { Cookie: cookie, Origin: 'https://evil.example' })).status, 403);
-    assert.equal((await post('/api/transcribe', { audio: 'not-wav' }, { Cookie: cookie })).status, 400);
-    assert.equal((await post('/api/analyze', { huge: 'a'.repeat(810000) }, { Cookie: cookie })).status, 413);
+    process.env.GROQ_API_KEY = 'test-only-not-a-real-key';
+    assert.deepEqual(await (await fetch(base + '/api/session')).json(), { configured: true });
+    assert.equal((await post('/api/analyze', {})).status, 400);
+    assert.equal((await post('/api/analyze', {}, { Origin: 'https://evil.example' })).status, 403);
+    assert.equal((await post('/api/transcribe', { audio: 'not-wav' })).status, 400);
+    assert.equal((await post('/api/analyze', { huge: 'a'.repeat(810000) })).status, 413);
     assert.throws(() => checkOrigin({ headers: { host: 'site.example' } }));
   } finally {
     await new Promise(resolve => server.close(resolve));
-    if (prior.key === undefined) delete process.env.GROQ_API_KEY; else process.env.GROQ_API_KEY = prior.key;
-    if (prior.code === undefined) delete process.env.APP_ACCESS_CODE; else process.env.APP_ACCESS_CODE = prior.code;
+    if (prior === undefined) delete process.env.GROQ_API_KEY; else process.env.GROQ_API_KEY = prior;
   }
 });

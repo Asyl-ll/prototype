@@ -1,28 +1,8 @@
-import { createHmac, timingSafeEqual, randomBytes } from 'node:crypto';
-
 export class HttpError extends Error {
   constructor(status, message, retryAfter) { super(message); this.status = status; this.retryAfter = retryAfter; }
 }
 export function ready() {
-  return Boolean(process.env.GROQ_API_KEY?.trim() && process.env.APP_ACCESS_CODE?.length >= 12);
-}
-function signature(value) {
-  return createHmac('sha256', process.env.APP_ACCESS_CODE || randomBytes(32)).update(value).digest('base64url');
-}
-export function same(a, b) {
-  const left = Buffer.from(String(a)), right = Buffer.from(String(b));
-  return left.length === right.length && timingSafeEqual(left, right);
-}
-export function issueToken(now = Date.now()) {
-  const value = `${now + 12 * 60 * 60 * 1000}.${randomBytes(16).toString('hex')}`;
-  return `${value}.${signature(value)}`;
-}
-export function authenticated(req, now = Date.now()) {
-  if (!ready()) return false;
-  const token = String(req.headers.cookie || '').split(';').map(s => s.trim()).find(s => s.startsWith('lecture_session='))?.slice(16);
-  if (!token) return false;
-  const [expires, nonce, sig, extra] = token.split('.');
-  return !extra && /^\d{13}$/.test(expires) && /^[a-f0-9]{32}$/.test(nonce || '') && Number(expires) > now && same(signature(`${expires}.${nonce}`), sig || '');
+  return Boolean(process.env.GROQ_API_KEY?.trim());
 }
 export function checkOrigin(req) {
   const origin = req.headers.origin;
@@ -72,7 +52,6 @@ export function endpoint(work, { publicRead = false } = {}) {
       checkOrigin(req);
       throttle(req, publicRead ? 'login' : 'api', publicRead ? 8 : 45);
       if (!ready()) throw new HttpError(503, 'AI is not configured yet. The site owner must add the server secrets.');
-      if (!publicRead && !authenticated(req)) throw new HttpError(401, 'Enter the site access code to continue.');
       await work(req, res);
     } catch (error) {
       if (res.writableEnded) return;

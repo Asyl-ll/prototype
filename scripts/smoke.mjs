@@ -1,11 +1,7 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { source } from '../tests/fixture.mjs';
 const base = process.argv[2] || 'http://localhost:5173';
-if (!process.env.APP_ACCESS_CODE) throw new Error('Set APP_ACCESS_CODE first.');
-const login = await fetch(base + '/api/session', { method: 'POST', headers: { Origin: base, 'Content-Type': 'application/json' }, body: JSON.stringify({ code: process.env.APP_ACCESS_CODE }) });
-if (!login.ok) throw new Error(`Login failed: ${login.status}`);
-const cookie = login.headers.get('set-cookie').split(';')[0];
-const headers = { Origin: base, Cookie: cookie, 'Content-Type': 'application/json' };
+const headers = { Origin: base, 'Content-Type': 'application/json' };
 const mode = process.argv[3] || 'text';
 if (mode === 'audio') {
   const audio = await readFile('test-results/fixtures/spoken-lecture.wav');
