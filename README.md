@@ -1,85 +1,91 @@
 # Lecture+
 
-Веб-сервис для учебного проекта: запись или файл → текст → конспект → задания, тест и следующие темы. Работает в браузере на компьютере и телефоне.
+Lecture+ — учебный веб-сервис: запись, файл или заметки превращаются в транскрипт, понятный анализ, будущие темы, квиз, задания и напоминания.
 
-**Опубликован:** https://lecture-plus-ict.vercel.app
+- Сайт: https://lecture-plus-ict.vercel.app
+- Публичная модель БД: https://lecture-plus-ict.vercel.app/database.html
+- Редактируемая ER-модель: https://lecture-plus-ict.vercel.app/lecture-plus.dbml
 
-Код доступа для демонстрации не требуется. API-ключ Groq остаётся только на сервере. Платёжные тарифы не подключались.
+Код доступа не нужен. AI работает и без аккаунта. Бесплатный аккаунт нужен только для приватной истории между устройствами.
 
-## Показ на защите (2–3 минуты)
+## Что показать на защите
 
-1. Открыть сайт и нажать Try sample notes или загрузить короткую запись своей лекции.
-2. Выбрать English, проверить дату лекции и подтвердить разрешение на обработку материала.
-3. Нажать Analyze lecture. Показать полный анализ: обзор, понятия, объяснения, примеры, связи и пункты для повторения.
-4. Перейти в What may come next и объяснить, что будущие темы являются рекомендациями. Затем пройти отдельный Quiz.
-5. Открыть Tasks: показать отдельные блоки Teacher assignments и Optional AI practice. Раскрыть Check details у задания, сверить цитату и срок.
-6. Выбрать Set a reminder → Download calendar file. Показать, что событие требует импорта в календарь.
-7. Открыть History и вернуться к сохранённой лекции. Заранее скачать Markdown на случай проблем с интернетом или квотой.
+1. Нажать **Try sample notes** или загрузить короткую запись.
+2. Нажать **Analyze lecture** и показать полный разбор материала.
+3. Открыть **What may come next**, затем отдельный **Quiz**.
+4. Показать **Tasks**: задания преподавателя и необязательную AI-практику.
+5. Открыть **Profile**: локальная история, вход и приватная синхронизация.
+6. Открыть **Database model**: 12 таблиц, связи, бизнес-правила и сценарий.
 
-Короткий текст выступления B1: “Lecture+ is a web service for students. We upload a lecture or paste our notes. AI finds the main ideas and makes a short study guide. It also creates practice questions and suggests what to learn next. We check every deadline using a quote from the lecture. Then we can save tasks and add a reminder to our calendar. AI can make mistakes, so the student makes the final decision.”
+Короткий текст B1: “Lecture+ is a web service for students. We upload a lecture or paste our notes. AI finds the main ideas and makes a clear study guide. It also creates a quiz, tasks and possible future topics. A student can use the service without an account. With a free account, private history can be opened on another device.”
 
-## Запуск
+## Основные функции
 
-Нужен Node.js 22.12+ (на этом компьютере установлен 24).
+- MP3, M4A, WAV, WEBM, OGG, MP4, запись микрофона, PDF, DOCX, PPTX, TXT и обычный текст.
+- Полный анализ: обзор, понятия, объяснения, примеры, связи и материал для повторения.
+- Прогноз следующих тем с причиной и уровнем уверенности.
+- Отдельный квиз с объяснением ошибок.
+- Задания преподавателя с цитатой из лекции и отдельная AI-практика.
+- Локальная история до 10 лекций без регистрации.
+- Опциональная приватная синхронизация через Supabase Auth и PostgreSQL.
+- Экспорт Markdown и календарного файла ICS.
+- Публичная страница БД показывает только структуру и безопасные примеры, без данных студентов.
+
+## База данных
+
+Supabase PostgreSQL содержит 12 прикладных таблиц: `profiles`, `lectures`, `transcripts`, `analyses`, `topics`, `lecture_topics`, `questions`, `answer_options`, `quiz_attempts`, `attempt_answers`, `tasks`, `reminders`.
+
+Row Level Security разрешает пользователю читать и менять только свои строки. Реальные лекции, email и транскрипты не публикуются. Исходники находятся в [db/schema.sql](db/schema.sql) и [db/lecture-plus.dbml](db/lecture-plus.dbml), миграция — в `supabase/migrations`.
+
+## Локальный запуск
+
+Нужен Node.js 22.12+.
 
 ```powershell
 npm install
 npm run dev
 ```
 
-Открыть http://localhost:5173. Настроить новый ключ Groq через http://localhost:5173/__setup. Эта страница доступна только локально; её нет в сборке для Vercel. Настройки сохраняются в исключённом из Git файле `.env.local`.
+Открыть http://localhost:5173. Секреты хранятся только в исключённом из Git файле `.env.local`:
 
-Ключ из переписки необходимо отозвать в https://console.groq.com/keys и заменить новым. API-ключ нельзя вводить на публичном сайте.
+```env
+GROQ_API_KEY=
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+```
 
-## Бесплатное размещение на Vercel
-
-Использовать Hobby для личного учебного проекта, Groq Free для AI. У бесплатных тарифов есть общие квоты; одновременные пользователи расходуют их вместе. Оплата не включается автоматически нашим кодом.
-
-1. Войти: `npx vercel login`.
-2. Связать проект: `npx vercel link`.
-3. В Environment Variables проекта добавить `GROQ_API_KEY` и отметить Production. Дополнительный `GROQ_TEXT_MODEL` по умолчанию равен `openai/gpt-oss-120b`.
-4. Выполнить `npx vercel --prod`. После изменения переменных требуется новый deploy.
-
-Для безопасной отправки переменных из `.env.local` можно использовать `npx --yes --package vercel -c "node --env-file=.env.local scripts/push-env.mjs"`; значения не выводятся в консоль. Никогда не добавлять префикс `VITE_` к секретам: он делает переменную доступной браузеру.
-
-## Что работает
-
-- Аудиофайлы MP3/M4A/WAV/WEBM/OGG/MP4 и запись микрофона с разрешения браузера.
-- PDF с текстовым слоем, DOCX, PPTX, TXT, вставка текста. Сканы требуют OCR заранее.
-- Полный анализ лекции: обзор, ключевые понятия, объяснения, примеры, связи между идеями и материал для повторения. Английский B1, русский или казахский язык результата.
-- Отдельный экран возможных будущих тем с причиной, связью с текущей лекцией, источником предположения и уровнем уверенности.
-- Отдельный квиз с правильным ответом, объяснением и рекомендацией, что повторить после ошибки.
-- Задания преподавателя с дословной цитатой отделены от необязательной AI-практики. Срок показывается компактно, а редактирование скрыто в Check details. Неизвестная дата не выдумывается.
-- До 10 последних лекций в этом браузере, отметки выполненных заданий, ответы на тест, удаление данных.
-- Загрузка Markdown с текстом и результатами, календарь ICS с напоминанием.
-- Уведомления браузера при открытой странице. Фоновые вкладки могут задерживать таймеры; при повторном открытии показывается пропущенное напоминание.
-- API-ключ AI остаётся на сервере. Same-origin проверка и ограничение частоты запросов снижают случайное злоупотребление.
-
-## Ограничения
-
-- Аудио: до 30 минут и 50 МБ; документы: до 15 МБ, PDF/PPTX до 100 страниц/слайдов, текст до 100 000 символов.
-- Будущие темы — рекомендации, не достоверное предсказание следующей лекции. Курс-план повышает их полезность. Поиск в интернете и проверка внешних источников в эту версию не подключены.
-- История хранится локально, без аккаунтов и синхронизации между устройствами. Сервер не сохраняет аудио или лекции. Провайдер Groq получает отправленные разделы согласно своей политике данных.
-- Напоминание календаря начинает работать после импорта/сохранения пользователем. LMS, email и background push не подключены.
-- Ограничение частоты запросов в серверной памяти действует в пределах экземпляра функции. Для большого публичного сервиса нужны полноценные аккаунты, общий лимит запросов и мониторинг.
-- Бесплатные квоты Groq могут вызвать ожидание или отказ. Сохраните заранее проверенную лекцию в History и скачайте конспект перед защитой.
-
-## IPO
-
-**Input:** lecture audio/documents/text, lecture date, selected language, optional course outline.
-
-**Process:** extract text in the browser; split audio into 55-second mono WAV sections; transcribe with Groq Whisper; analyze structured text sections; merge long lectures without dropping distinct concepts; generate a validated study guide; keep assignment quotes only when found in source text; let the user check the results.
-
-**Output:** complete lecture analysis, possible future topics, a separate quiz, teacher assignments, optional AI practice, editable deadlines, Markdown notes, calendar events and browser reminders.
+Локальная страница `/__setup` помогает записать ключ Groq. Она не попадает в production-сборку.
 
 ## Проверка
 
 ```powershell
 npm test
+npm run test:cloud
 npm run build
 npm audit
 ```
 
-`node tests/mock-server.mjs` запускает отдельный тестовый сайт на порту 5174. Его результаты явно помечены `MOCK TEST RESULT`; они не являются настоящим AI. Тестовый сервер никогда не импортируется в Vercel.
+`test:cloud` создаёт временных пользователей, проверяет сохранение и загрузку лекции, изоляцию RLS, публичный статус БД и удаляет тестовые данные.
 
-`node tests/create-fixtures.mjs` создаёт синтетические тестовые файлы. Проверены извлечение пяти форматов, календарное экранирование и часовые пояса, проверка источников, обработка неверных данных, same-origin защита и лимиты. Проверка с живым Groq выполняется отдельно после настройки ключа.
+## Бесплатные сервисы
+
+- Vercel Hobby — хостинг сайта и serverless API.
+- Groq Free — распознавание аудио и обработка текста.
+- Supabase Free — PostgreSQL, вход и приватная синхронизация.
+
+У бесплатных тарифов есть квоты. Код проекта не включает автоматическую оплату.
+
+## Ограничения
+
+- Аудио: до 30 минут и 50 МБ; документы: до 15 МБ; текст: до 100 000 символов.
+- Будущие темы являются рекомендациями AI, а не точным планом преподавателя.
+- Бесплатные квоты Groq могут временно замедлить анализ.
+- Lecture+ не хранит аудиофайл: он отправляется в Groq для обработки. В Supabase сохраняются результаты только после входа и включения синхронизации.
+
+## IPO
+
+**Input:** lecture audio, document or notes; language; lecture date; optional course outline.
+
+**Process:** text extraction, audio transcription, AI analysis, validation, structured storage and Row Level Security.
+
+**Output:** transcript, learning guide, future topics, quiz, tasks, reminders, exports and private history.

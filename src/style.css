@@ -727,3 +727,45 @@ footer {
   button.btn,
   a.btn.linkbtn { transition: none; }
 }
+
+/* Profile, cloud history and database navigation */
+.nav-link { display: inline-flex; align-items: center; color: inherit; text-decoration: none; }
+.cloud-banner { margin: 18px 0; padding: 13px 16px; border: 1px solid var(--glass-border); border-radius: 16px; background: var(--glass-soft); color: var(--ink-soft); }
+.cloud-banner.ready { color: var(--ok); }
+.cloud-banner.offline { color: var(--danger, #b33a3a); }
+.auth-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 20px 0; }
+.auth-card { display: grid; align-content: start; gap: 12px; }
+.auth-card h2, .auth-card p, .auth-card .field { margin: 0; }
+.profile-head { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.profile-head h2, .profile-head p { margin-top: 0; }
+.profile-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.sync-toggle { display: inline-flex; align-items: center; gap: 9px; padding: 10px 14px; border: 1px solid var(--glass-border); border-radius: 999px; background: var(--glass-soft); font-weight: 600; }
+.sync-toggle input { accent-color: var(--mark); }
+.stat-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 22px 0; }
+.stat-card { display: grid; gap: 4px; padding: 18px; border: 1px solid var(--glass-border); border-radius: 20px; background: var(--glass); box-shadow: var(--glass-shadow-soft); }
+.stat-card strong { font-family: "Bricolage Grotesque", sans-serif; font-size: clamp(1.55rem, 4vw, 2.3rem); letter-spacing: -.04em; }
+.stat-card span { color: var(--ink-soft); font-size: .88rem; }
+.history-tools { display: grid; grid-template-columns: minmax(0, 1fr) minmax(170px, .38fr) auto; align-items: end; gap: 12px; margin: 22px 0 16px; }
+.history-tools .field { margin: 0; }
+.history-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 22px; }
+.history-card { display: grid; align-content: start; gap: 14px; padding: 20px; border: 1px solid var(--glass-border); border-radius: 24px; background: var(--glass); box-shadow: var(--glass-shadow-soft); }
+.history-card-head { display: flex; justify-content: space-between; gap: 14px; }
+.history-card h2 { margin: 10px 0 4px; font-size: 1.22rem; }
+.history-card p { margin: 0; }
+.history-tags { display: flex; flex-wrap: wrap; gap: 7px; }
+.future-tag { color: var(--mark); }
+.cloud-badge { color: var(--ok); }
+.history-progress { display: flex; justify-content: space-between; gap: 12px; padding-top: 12px; border-top: 1px solid var(--line); color: var(--ink-soft); font-size: .9rem; }
+.history-card .btn { justify-self: start; }
+
+@media (max-width: 720px) {
+  .auth-grid, .history-cards { grid-template-columns: 1fr; }
+  .history-tools { grid-template-columns: 1fr; align-items: stretch; }
+  .profile-head { align-items: flex-start; flex-direction: column; }
+}
+
+@media (max-width: 430px) {
+  .stat-grid { gap: 8px; }
+  .stat-card { padding: 13px 10px; border-radius: 16px; }
+  .stat-card span { font-size: .72rem; }
+}

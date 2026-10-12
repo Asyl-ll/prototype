@@ -1,0 +1,124 @@
+Project LecturePlus {
+  database_type: 'PostgreSQL'
+  Note: 'Lecture+ learning data model. Supabase auth.users is external to the 12 application tables.'
+}
+
+Table profiles {
+  id uuid [pk, ref: > auth_users.id]
+  display_name text [not null]
+  email text [not null]
+  avatar_url text
+  cloud_sync_enabled boolean [not null, default: false]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+}
+
+Table lectures {
+  id uuid [pk]
+  user_id uuid [not null, ref: > profiles.id]
+  title text [not null]
+  source_type text [not null]
+  source_name text
+  language text [not null]
+  lecture_date date [not null]
+  duration_seconds integer
+  status text [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+}
+
+Table transcripts {
+  id uuid [pk]
+  lecture_id uuid [not null, unique, ref: > lectures.id]
+  content text [not null]
+  word_count integer [not null]
+  detected_language text
+  created_at timestamptz [not null]
+}
+
+Table analyses {
+  id uuid [pk]
+  lecture_id uuid [not null, unique, ref: > lectures.id]
+  summary text [not null]
+  key_points jsonb [not null]
+  explanation_sections jsonb [not null]
+  recommended_actions jsonb [not null]
+  model_name text
+  created_at timestamptz [not null]
+}
+
+Table topics {
+  id uuid [pk]
+  name text [not null, unique]
+  description text
+  created_at timestamptz [not null]
+}
+
+Table lecture_topics {
+  id uuid [pk]
+  lecture_id uuid [not null, ref: > lectures.id]
+  topic_id uuid [not null, ref: > topics.id]
+  role text [not null, note: 'current or future']
+  reason text
+  confidence numeric
+  indexes { (lecture_id, topic_id, role) [unique] }
+}
+
+Table questions {
+  id uuid [pk]
+  lecture_id uuid [not null, ref: > lectures.id]
+  question_text text [not null]
+  explanation text
+  position integer [not null]
+  created_at timestamptz [not null]
+}
+
+Table answer_options {
+  id uuid [pk]
+  question_id uuid [not null, ref: > questions.id]
+  option_text text [not null]
+  is_correct boolean [not null]
+  position integer [not null]
+}
+
+Table quiz_attempts {
+  id uuid [pk]
+  user_id uuid [not null, ref: > profiles.id]
+  lecture_id uuid [not null, ref: > lectures.id]
+  score integer [not null]
+  total_questions integer [not null]
+  completed_at timestamptz [not null]
+}
+
+Table attempt_answers {
+  id uuid [pk]
+  attempt_id uuid [not null, ref: > quiz_attempts.id]
+  question_id uuid [not null, ref: > questions.id]
+  selected_option_id uuid [not null, ref: > answer_options.id]
+  is_correct boolean [not null]
+}
+
+Table tasks {
+  id uuid [pk]
+  lecture_id uuid [not null, ref: > lectures.id]
+  title text [not null]
+  description text
+  task_type text [not null, note: 'teacher or ai_practice']
+  due_at timestamptz
+  is_completed boolean [not null]
+  created_at timestamptz [not null]
+}
+
+Table reminders {
+  id uuid [pk]
+  task_id uuid [not null, ref: > tasks.id]
+  remind_at timestamptz [not null]
+  channel text [not null, note: 'in_app or calendar']
+  status text [not null]
+  created_at timestamptz [not null]
+}
+
+Table auth_users {
+  id uuid [pk]
+  Note: 'External Supabase Auth table; not counted among the 12 application tables.'
+}

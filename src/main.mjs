@@ -5,10 +5,13 @@ import { splitText, localDate, validDate, validTime } from '../shared/content.mj
 import { buildIcs, reminderTime } from '../shared/calendar.mjs';
 import { normalizeResult } from '../shared/result.mjs';
 import * as storage from './storage.mjs';
+import { cloudConfigured, currentUser, onAuthChange, signUp, signIn, signOut, profile as loadCloudProfile, enableCloudSync, saveLectureCloud, listCloudHistory, getCloudLecture, deleteCloudLecture } from './cloud.mjs';
+import { historyStats, localHistoryCards } from './cloud-data.mjs';
 
 const $ = id => document.getElementById(id);
 const el = (tag, text, className) => { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (className) node.className = className; return node; };
 let file = null, lecture = null, controller = null, lastCalendar = null, toastTimer, recorder = null, recordingTimer, session = {};
+let cloudUser = null, cloudProfile = null, cloudRows = [], cloudSaveTimer = null;
 const steps = { upload: 1, processing: 2, summary: 2, next: 3, quiz: 4, tasks: 5, reminder: 6, success: 6, history: 0 };
 const headings = { upload: 'h-upload', processing: 'h-proc', summary: 'h-sum', next: 'h-next', quiz: 'h-quiz', tasks: 'h-tasks', reminder: 'h-rem', success: 'h-ok', history: 'h-history' };
 function show(name) {
@@ -22,10 +25,31 @@ function show(name) {
 function message(id, text) { $(id).textContent = text; $(id).hidden = !text; }
 function toast(text) { clearTimeout(toastTimer); message('toast', text); toastTimer = setTimeout(() => $('toast').hidden = true, 7000); }
 function progress(percent, text) { $('bar-fill').style.width = `${percent}%`; $('bar').setAttribute('aria-valuenow', String(Math.round(percent))); $('proc-status').textContent = text; }
+function savedState(text) { if ($('saved-state')) $('saved-state').textContent = text; }
+async function saveCloudNow(target = lecture) {
+  if (!target || !cloudUser || !cloudProfile?.cloud_sync_enabled) return;
+  try {
+    await saveLectureCloud(target, storage.reminders());
+    target.cloudId = target.id;
+    if (target === lecture) savedState(target.saveLocal ? 'Saved on this device + private cloud' : 'Saved to private cloud');
+  } catch (error) {
+    if (target === lecture) savedState(target.saveLocal ? 'Saved on this device · cloud retry needed' : 'Cloud save failed');
+    toast(`Cloud sync: ${error.message}`);
+  }
+}
+function scheduleCloudSave() {
+  if (!lecture || !cloudUser || !cloudProfile?.cloud_sync_enabled) return;
+  clearTimeout(cloudSaveTimer);
+  savedState(lecture.saveLocal ? 'Saved on this device · syncing…' : 'Syncing to private cloud…');
+  cloudSaveTimer = setTimeout(() => void saveCloudNow(), 700);
+}
 function save() {
-  if (!lecture?.saveLocal) return;
-  try { storage.saveLecture(lecture); $('saved-state').textContent = 'Saved on this device'; }
-  catch { $('saved-state').textContent = 'Not saved'; toast('Browser storage is full or unavailable. Download your notes to keep them.'); }
+  if (!lecture) return;
+  if (lecture.saveLocal) {
+    try { storage.saveLecture(lecture); savedState('Saved on this device'); }
+    catch { savedState('Not saved'); toast('Browser storage is full or unavailable. Download your notes to keep them.'); }
+  } else savedState('Not saved on this device');
+  scheduleCloudSave();
 }
 function invalidateReminder(deadlineId) {
   const rows = storage.reminders();
@@ -169,7 +193,7 @@ function renderSummary() {
   const analysis = lecture.result.analysis;
   $('h-sum').textContent = lecture.result.title; $('analysis-overview').textContent = analysis.overview;
   $('sum-file').textContent = `${lecture.filename} · Lecture: ${lecture.settings.date}`;
-  $('saved-state').textContent = lecture.saveLocal ? 'Saved on this device' : 'Not saved · download to keep';
+  savedState(lecture.cloudId ? 'Saved on this device + private cloud' : (lecture.saveLocal ? 'Saved on this device' : 'Not saved · download to keep'));
   $('analysis-concepts').replaceChildren(...analysis.concepts.map((concept, index) => {
     const box = el('article', undefined, 'concept');
     box.append(el('span', String(index + 1).padStart(2, '0'), 'concept-number'), el('div'));
@@ -335,25 +359,119 @@ function checkReminders() {
 }
 setInterval(checkReminders, 15000); window.addEventListener('focus', checkReminders);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) checkReminders(); });
-function renderHistory() {
-  const rows = storage.read(); $('history-list').replaceChildren();
-  if (!rows.length) $('history-list').append(el('p', 'Your saved lectures will appear here.', 'card'));
-  for (const row of rows) {
-    if (!row.result?.title) continue;
-    const box = el('div', undefined, 'history-row'), info = el('div'), open = el('button', row.result.title, 'history-title');
-    open.onclick = () => { lecture = row; lecture.result = normalizeResult(row.result); lecture.answers ||= {}; lecture.checked ||= {}; renderSummary(); show('summary'); };
-    info.append(open, el('small', `${row.settings.date} · ${row.filename}`));
-    const del = el('button', 'Delete', 'text-btn'); del.setAttribute('aria-label', `Delete ${row.result.title}`);
-    del.onclick = () => { if (confirm('Delete this lecture and its browser reminders from this device?')) { storage.deleteLecture(row.id); if (lecture?.id === row.id) lecture.saveLocal = false; renderHistory(); } };
-    box.append(info, del); $('history-list').append(box);
+function setCloudMessage(text, type = '') {
+  $('cloud-banner').textContent = text;
+  $('cloud-banner').className = `cloud-banner${type ? ` ${type}` : ''}`;
+}
+async function refreshCloudAccount() {
+  cloudUser = cloudConfigured ? await currentUser().catch(() => null) : null;
+  cloudProfile = cloudUser ? await loadCloudProfile().catch(() => null) : null;
+  if (cloudUser && !cloudProfile) {
+    await new Promise(resolve => setTimeout(resolve, 400));
+    cloudProfile = await loadCloudProfile().catch(() => null);
   }
+  $('auth-panel').hidden = Boolean(cloudUser) || !cloudConfigured;
+  $('profile-panel').hidden = !cloudUser;
+  if (!cloudConfigured) setCloudMessage('Cloud setup is pending. Local history and all AI tools still work.', 'offline');
+  else if (!cloudUser) setCloudMessage('Cloud database ready · sign in only if you want private sync.', 'ready');
+  else {
+    $('profile-name').textContent = cloudProfile?.display_name || cloudUser.user_metadata?.display_name || 'Student';
+    $('profile-email').textContent = cloudUser.email || '';
+    $('cloud-sync').checked = Boolean(cloudProfile?.cloud_sync_enabled);
+    setCloudMessage(cloudProfile?.cloud_sync_enabled ? 'Private cloud sync is on.' : 'Signed in · cloud sync is off until you enable it.', cloudProfile?.cloud_sync_enabled ? 'ready' : '');
+  }
+}
+function historyCard(row) {
+  const card = el('article', undefined, 'history-card');
+  const head = el('div', undefined, 'history-card-head'), info = el('div');
+  info.append(el('span', row.local ? 'This device' : 'Private cloud', `badge ${row.local ? '' : 'cloud-badge'}`), el('h2', row.title));
+  const date = new Date(row.created_at); info.append(el('p', `${Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString()} · ${row.source_name || 'Lecture'}`, 'muted'));
+  const del = el('button', 'Delete', 'text-btn'); del.setAttribute('aria-label', `Delete ${row.title}`);
+  del.onclick = async () => {
+    if (!confirm(`Delete “${row.title}” from ${row.local ? 'this device' : 'your private cloud'}?`)) return;
+    try {
+      if (row.local) storage.deleteLecture(row.id); else await deleteCloudLecture(row.id);
+      if (lecture?.id === row.id) lecture.saveLocal = false;
+      await renderHistory();
+    } catch (error) { toast(error.message); }
+  };
+  head.append(info, del); card.append(head);
+  const tags = el('div', undefined, 'history-tags');
+  for (const topic of (row.current_topics || []).slice(0, 3)) tags.append(el('span', topic, 'tag'));
+  for (const topic of (row.future_topics || []).slice(0, 2)) tags.append(el('span', `Next: ${topic}`, 'tag future-tag'));
+  card.append(tags);
+  const progressRow = el('div', undefined, 'history-progress');
+  progressRow.append(el('span', `Quiz ${row.total_questions ? `${row.score}/${row.total_questions}` : 'not started'}`), el('span', `Tasks ${row.completed_tasks}/${row.total_tasks}`));
+  card.append(progressRow);
+  const open = el('button', 'Open full lecture', 'btn btn-secondary');
+  open.onclick = async () => {
+    try {
+      const data = row.local ? row.lecture : await getCloudLecture(row.id);
+      if (!data) throw new Error('This lecture could not be loaded.');
+      lecture = data; lecture.result = normalizeResult(data.result); lecture.answers ||= {}; lecture.checked ||= {}; lecture.cloudId ||= row.local ? null : row.id;
+      renderSummary(); show('summary');
+    } catch (error) { toast(error.message); }
+  };
+  card.append(open); return card;
+}
+async function renderHistory() {
+  const localRows = localHistoryCards(storage.read());
+  cloudRows = cloudUser ? await listCloudHistory().catch(error => { toast(`Cloud history: ${error.message}`); return []; }) : [];
+  const cloudIds = new Set(cloudRows.map(row => row.id));
+  const rows = [...cloudRows, ...localRows.filter(row => !cloudIds.has(row.id))];
+  const query = $('history-search').value.trim().toLowerCase(), dateFilter = $('history-date').value;
+  const filtered = rows.filter(row => {
+    const words = [row.title, ...(row.current_topics || []), ...(row.future_topics || [])].join(' ').toLowerCase();
+    const date = String(row.created_at || '').slice(0, 10);
+    return (!query || words.includes(query)) && (!dateFilter || date === dateFilter);
+  });
+  const stats = historyStats(rows);
+  $('stat-lectures').textContent = String(stats.lectures); $('stat-quiz').textContent = `${stats.quizAverage}%`; $('stat-tasks').textContent = `${stats.completedTasks}/${stats.totalTasks}`;
+  $('history-list').replaceChildren(...filtered.map(historyCard));
+  if (!filtered.length) $('history-list').append(el('p', rows.length ? 'No lectures match these filters.' : 'Your saved lectures will appear here.', 'card muted'));
   $('reminder-list').replaceChildren(...storage.reminders().map(row => {
     const box = el('div', undefined, 'history-row'); box.append(el('div', `${row.title} · ${new Date(row.at).toLocaleString()} · ${row.fired ? 'Shown' : 'Pending'}`));
     const cancel = el('button', 'Remove', 'text-btn'); cancel.onclick = () => { storage.saveReminders(storage.reminders().filter(r => r.id !== row.id)); renderHistory(); }; box.append(cancel); return box;
   }));
   if (!$('reminder-list').childElementCount) $('reminder-list').append(el('p', 'No browser reminders saved.', 'muted'));
 }
-$('history').onclick = () => { stopWork(); renderHistory(); show('history'); };
+$('history').onclick = async () => { stopWork(); await refreshCloudAccount(); await renderHistory(); show('history'); };
+$('history-search').oninput = () => void renderHistory();
+$('history-date').onchange = () => void renderHistory();
+$('history-reset').onclick = () => { $('history-search').value = ''; $('history-date').value = ''; void renderHistory(); };
+$('sign-in-form').onsubmit = async event => {
+  event.preventDefault(); setCloudMessage('Signing in…');
+  try {
+    await signIn({ email: $('sign-in-email').value.trim(), password: $('sign-in-password').value });
+    await refreshCloudAccount(); await renderHistory(); toast('Signed in. Your AI tools and local history are ready.');
+  } catch (error) { setCloudMessage(error.message, 'offline'); }
+};
+$('sign-up-form').onsubmit = async event => {
+  event.preventDefault(); setCloudMessage('Creating your account…');
+  try {
+    const data = await signUp({ email: $('sign-up-email').value.trim(), password: $('sign-up-password').value, displayName: $('sign-up-name').value.trim() });
+    if (!data.session) setCloudMessage('Account created. Check your email, then sign in.', 'ready');
+    else { await refreshCloudAccount(); await renderHistory(); toast('Account created.'); }
+  } catch (error) { setCloudMessage(error.message, 'offline'); }
+};
+$('sign-out').onclick = async () => { await signOut(); cloudUser = null; cloudProfile = null; cloudRows = []; await refreshCloudAccount(); await renderHistory(); };
+$('cloud-sync').onchange = async () => {
+  const enabled = $('cloud-sync').checked;
+  try { cloudProfile = await enableCloudSync(enabled); setCloudMessage(enabled ? 'Private cloud sync is on.' : 'Private cloud sync is off.', enabled ? 'ready' : ''); }
+  catch (error) { $('cloud-sync').checked = !enabled; setCloudMessage(error.message, 'offline'); }
+};
+$('import-local').onclick = async () => {
+  const rows = storage.read();
+  if (!rows.length) return toast('There is no local history to import.');
+  $('import-local').disabled = true; $('sync-message').textContent = `Importing 0 of ${rows.length}…`;
+  try {
+    if (!cloudProfile?.cloud_sync_enabled) { cloudProfile = await enableCloudSync(true); $('cloud-sync').checked = true; }
+    for (let index = 0; index < rows.length; index++) { await saveCloudNow(rows[index]); $('sync-message').textContent = `Importing ${index + 1} of ${rows.length}…`; }
+    $('sync-message').textContent = `${rows.length} local lecture${rows.length === 1 ? '' : 's'} synced.`; await renderHistory();
+  } catch (error) { $('sync-message').textContent = `Import stopped: ${error.message}`; }
+  finally { $('import-local').disabled = false; }
+};
 $('clear-history').onclick = () => { if (confirm('Delete all saved lectures, tasks and browser reminders on this device?')) { storage.clearAll(); if (lecture) lecture.saveLocal = false; renderHistory(); } };
 window.addEventListener('beforeunload', event => { if (controller || recorder?.state === 'recording') { event.preventDefault(); event.returnValue = ''; } });
-void refreshSession(); checkReminders();
+onAuthChange(async user => { cloudUser = user; await refreshCloudAccount(); if (!$('screen-history').hidden) await renderHistory(); });
+void refreshSession(); void refreshCloudAccount(); checkReminders();
