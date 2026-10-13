@@ -235,9 +235,13 @@ add_hyperlink(p, "lecture-plus-ict.vercel.app/database.html", "https://lecture-p
 doc.add_paragraph("The DBML file can be imported into dbdiagram.io and edited without changing the real student database.")
 
 doc.add_heading("Main relationships", level=2)
+doc.add_paragraph(
+    "The ER model uses only one-to-many (1:N) and many-to-one (N:1) relationships. "
+    "The lecture_topics child table turns the lecture-topic connection into two separate 1:N relationships."
+)
 for item in (
     "One profile can own many lectures and quiz attempts.",
-    "One lecture has one transcript and one analysis.",
+    "One lecture can have many transcript versions and many analysis versions.",
     "One lecture has many lecture_topic rows; each row points to exactly one topic.",
     "One topic can appear in many lecture_topic rows.",
     "One question has many answer options.",
@@ -250,7 +254,7 @@ doc.add_page_break()
 doc.add_heading("Data dictionary", level=1)
 doc.add_paragraph("Each table has one clear job. The table below gives the purpose and the most important keys.")
 dictionary_rows = [
-    ("1", "profiles", "Student profile and cloud sync choice", "PK id, FK auth.users"),
+    ("1", "profiles", "Student profile and cloud sync choice", "PK id"),
     ("2", "lectures", "One uploaded or recorded lecture", "PK id, FK user_id"),
     ("3", "transcripts", "Extracted lecture text", "PK id, FK lecture_id"),
     ("4", "analyses", "AI summary and explanation sections", "PK id, FK lecture_id"),
@@ -281,9 +285,8 @@ doc.add_paragraph(
 doc.add_page_break()
 doc.add_heading("Business rules", level=1)
 rules = [
-    "One authenticated user has one profile.",
     "One profile can own many lectures and quiz attempts.",
-    "One lecture has at most one transcript and one analysis.",
+    "One lecture can have many transcript and analysis versions; each version belongs to one lecture.",
     "One lecture can have many lecture_topic rows; each row has one topic and one role.",
     "Each quiz question has two or more options and one correct option.",
     "One quiz attempt belongs to one student and one lecture.",

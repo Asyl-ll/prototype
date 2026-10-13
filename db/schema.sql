@@ -32,7 +32,7 @@ create table if not exists public.lectures (
 
 create table if not exists public.transcripts (
   id uuid primary key default gen_random_uuid(),
-  lecture_id uuid not null unique references public.lectures(id) on delete cascade,
+  lecture_id uuid not null references public.lectures(id) on delete cascade,
   content text not null,
   word_count integer not null default 0 check (word_count >= 0),
   detected_language text,
@@ -41,7 +41,7 @@ create table if not exists public.transcripts (
 
 create table if not exists public.analyses (
   id uuid primary key default gen_random_uuid(),
-  lecture_id uuid not null unique references public.lectures(id) on delete cascade,
+  lecture_id uuid not null references public.lectures(id) on delete cascade,
   summary text not null,
   key_points jsonb not null default '[]'::jsonb,
   explanation_sections jsonb not null default '[]'::jsonb,
@@ -124,7 +124,14 @@ create table if not exists public.reminders (
   created_at timestamptz not null default now()
 );
 
+-- Keep the application ER model limited to 1:N / N:1 relationships.
+-- A lecture may keep several transcript or analysis versions.
+alter table public.transcripts drop constraint if exists transcripts_lecture_id_key;
+alter table public.analyses drop constraint if exists analyses_lecture_id_key;
+
 create index if not exists lectures_user_created_idx on public.lectures(user_id, created_at desc);
+create index if not exists transcripts_lecture_idx on public.transcripts(lecture_id);
+create index if not exists analyses_lecture_idx on public.analyses(lecture_id);
 create index if not exists lecture_topics_lecture_idx on public.lecture_topics(lecture_id);
 create index if not exists questions_lecture_idx on public.questions(lecture_id, position);
 create index if not exists attempts_user_lecture_idx on public.quiz_attempts(user_id, lecture_id, completed_at desc);

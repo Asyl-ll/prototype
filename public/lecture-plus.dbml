@@ -4,7 +4,7 @@ Project LecturePlus {
 }
 
 Table profiles {
-  id uuid [pk, ref: > auth_users.id]
+  id uuid [pk, note: 'Matches the signed-in Supabase user ID; authentication is outside this ER model']
   display_name text [not null]
   email text [not null]
   avatar_url text
@@ -29,7 +29,7 @@ Table lectures {
 
 Table transcripts {
   id uuid [pk]
-  lecture_id uuid [not null, unique, ref: > lectures.id]
+  lecture_id uuid [not null, ref: > lectures.id]
   content text [not null]
   word_count integer [not null]
   detected_language text
@@ -38,7 +38,7 @@ Table transcripts {
 
 Table analyses {
   id uuid [pk]
-  lecture_id uuid [not null, unique, ref: > lectures.id]
+  lecture_id uuid [not null, ref: > lectures.id]
   summary text [not null]
   key_points jsonb [not null]
   explanation_sections jsonb [not null]
@@ -118,7 +118,3 @@ Table reminders {
   created_at timestamptz [not null]
 }
 
-Table auth_users {
-  id uuid [pk]
-  Note: 'External Supabase Auth table; not counted among the 12 application tables.'
-}
