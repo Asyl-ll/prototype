@@ -186,7 +186,7 @@ meta_data = [
     ("Project", "Lecture Plus web service"),
     ("Team", "Askat, Merei, Asyl and Zangarbek"),
     ("Database", "Supabase PostgreSQL with 12 application tables"),
-    ("Date", "12 October 2026"),
+    ("Date", "13 October 2026"),
 ]
 for row, values in zip(meta.rows, meta_data):
     row.cells[0].text, row.cells[1].text = values
@@ -238,7 +238,8 @@ doc.add_heading("Main relationships", level=2)
 for item in (
     "One profile can own many lectures and quiz attempts.",
     "One lecture has one transcript and one analysis.",
-    "Lectures and topics have a many-to-many relationship through lecture_topics.",
+    "One lecture has many lecture_topic rows; each row points to exactly one topic.",
+    "One topic can appear in many lecture_topic rows.",
     "One question has many answer options.",
     "One quiz attempt has many selected answers.",
     "One task can have many reminders."
@@ -254,7 +255,7 @@ dictionary_rows = [
     ("3", "transcripts", "Extracted lecture text", "PK id, FK lecture_id"),
     ("4", "analyses", "AI summary and explanation sections", "PK id, FK lecture_id"),
     ("5", "topics", "Reusable current and future topic names", "PK id"),
-    ("6", "lecture_topics", "Links a lecture to a topic and role", "FK lecture_id, FK topic_id"),
+    ("6", "lecture_topics", "Child row linking one lecture to one topic", "FK lecture_id, FK topic_id"),
     ("7", "questions", "Quiz questions for one lecture", "PK id, FK lecture_id"),
     ("8", "answer_options", "Possible and correct answers", "PK id, FK question_id"),
     ("9", "quiz_attempts", "One student's score for one lecture", "FK user_id, FK lecture_id"),
@@ -283,7 +284,7 @@ rules = [
     "One authenticated user has one profile.",
     "One profile can own many lectures and quiz attempts.",
     "One lecture has at most one transcript and one analysis.",
-    "A lecture can have current topics and predicted future topics.",
+    "One lecture can have many lecture_topic rows; each row has one topic and one role.",
     "Each quiz question has two or more options and one correct option.",
     "One quiz attempt belongs to one student and one lecture.",
     "Teacher tasks and AI practice tasks use different task types.",
