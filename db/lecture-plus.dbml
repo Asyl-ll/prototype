@@ -1,20 +1,20 @@
 Project LecturePlus {
   database_type: 'PostgreSQL'
-  Note: 'Lecture+ learning data model. Supabase auth.users is external to the 12 application tables.'
+  Note: 'Generated from the live Supabase public schema. All relations are 1:N / N:1.'
 }
 
 Table profiles {
-  id uuid [pk, note: 'Matches the signed-in Supabase user ID; authentication is outside this ER model']
+  id uuid [pk, not null]
   display_name text [not null]
   email text [not null]
   avatar_url text
-  cloud_sync_enabled boolean [not null, default: false]
+  cloud_sync_enabled boolean [not null]
   created_at timestamptz [not null]
   updated_at timestamptz [not null]
 }
 
 Table lectures {
-  id uuid [pk]
+  id uuid [pk, not null]
   user_id uuid [not null, ref: > profiles.id]
   title text [not null]
   source_type text [not null]
@@ -28,7 +28,7 @@ Table lectures {
 }
 
 Table transcripts {
-  id uuid [pk]
+  id uuid [pk, not null]
   lecture_id uuid [not null, ref: > lectures.id]
   content text [not null]
   word_count integer [not null]
@@ -37,7 +37,7 @@ Table transcripts {
 }
 
 Table analyses {
-  id uuid [pk]
+  id uuid [pk, not null]
   lecture_id uuid [not null, ref: > lectures.id]
   summary text [not null]
   key_points jsonb [not null]
@@ -48,24 +48,23 @@ Table analyses {
 }
 
 Table topics {
-  id uuid [pk]
+  id uuid [pk, not null]
   name text [not null, unique]
   description text
   created_at timestamptz [not null]
 }
 
 Table lecture_topics {
-  id uuid [pk]
+  id uuid [pk, not null]
   lecture_id uuid [not null, ref: > lectures.id]
   topic_id uuid [not null, ref: > topics.id]
-  role text [not null, note: 'current or future']
+  role text [not null]
   reason text
-  confidence numeric
-  indexes { (lecture_id, topic_id, role) [unique] }
+  confidence numeric(4,3)
 }
 
 Table questions {
-  id uuid [pk]
+  id uuid [pk, not null]
   lecture_id uuid [not null, ref: > lectures.id]
   question_text text [not null]
   explanation text
@@ -74,7 +73,7 @@ Table questions {
 }
 
 Table answer_options {
-  id uuid [pk]
+  id uuid [pk, not null]
   question_id uuid [not null, ref: > questions.id]
   option_text text [not null]
   is_correct boolean [not null]
@@ -82,7 +81,7 @@ Table answer_options {
 }
 
 Table quiz_attempts {
-  id uuid [pk]
+  id uuid [pk, not null]
   user_id uuid [not null, ref: > profiles.id]
   lecture_id uuid [not null, ref: > lectures.id]
   score integer [not null]
@@ -91,7 +90,7 @@ Table quiz_attempts {
 }
 
 Table attempt_answers {
-  id uuid [pk]
+  id uuid [pk, not null]
   attempt_id uuid [not null, ref: > quiz_attempts.id]
   question_id uuid [not null, ref: > questions.id]
   selected_option_id uuid [not null, ref: > answer_options.id]
@@ -99,22 +98,21 @@ Table attempt_answers {
 }
 
 Table tasks {
-  id uuid [pk]
+  id uuid [pk, not null]
   lecture_id uuid [not null, ref: > lectures.id]
   title text [not null]
   description text
-  task_type text [not null, note: 'teacher or ai_practice']
+  task_type text [not null]
   due_at timestamptz
   is_completed boolean [not null]
   created_at timestamptz [not null]
 }
 
 Table reminders {
-  id uuid [pk]
+  id uuid [pk, not null]
   task_id uuid [not null, ref: > tasks.id]
   remind_at timestamptz [not null]
-  channel text [not null, note: 'in_app or calendar']
+  channel text [not null]
   status text [not null]
   created_at timestamptz [not null]
 }
-

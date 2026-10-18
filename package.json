@@ -8,7 +8,9 @@
     "build": "vite build",
     "test": "node --test tests/*.test.mjs",
     "test:cloud": "node --env-file=.env.local scripts/verify-supabase.mjs",
-    "db:apply": "node --env-file=.env.local scripts/apply-db-schema.mjs",
+    "test:schema": "node --env-file=.env.local scripts/verify-db-schema.mjs",
+    "db:export": "node --env-file=.env.local scripts/export-db-diagram.mjs",
+    "db:apply": "node --env-file=.env.local scripts/apply-db-schema.mjs && npm run db:export && npm run test:schema",
     "preview": "node --env-file-if-exists=.env.local scripts/dev.mjs --production"
   },
   "engines": {
@@ -17,11 +19,12 @@
   "dependencies": {
     "@supabase/supabase-js": "2.117.3",
     "fflate": "^0.8.2",
+    "mermaid": "^12.2.0",
     "pdfjs-dist": "^6.4.299",
+    "pg": "^8.23.1",
     "zod": "^4.0.0"
   },
   "devDependencies": {
-    "pg": "^8.23.1",
     "vite": "^7.1.0"
   }
 }

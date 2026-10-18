@@ -3,7 +3,7 @@
 Lecture+ — учебный веб-сервис: запись, файл или заметки превращаются в транскрипт, понятный анализ, будущие темы, квиз, задания и напоминания.
 
 - Сайт: https://lecture-plus-ict.vercel.app
-- Публичная модель БД: https://lecture-plus-ict.vercel.app/database.html
+- Живая ER-диаграмма БД: https://lecture-plus-ict.vercel.app/database.html
 - Редактируемая ER-модель: https://lecture-plus-ict.vercel.app/lecture-plus.dbml
 
 Код доступа не нужен. AI работает и без аккаунта. Бесплатный аккаунт нужен только для приватной истории между устройствами.
@@ -35,7 +35,7 @@ Lecture+ — учебный веб-сервис: запись, файл или �
 
 Supabase PostgreSQL содержит 12 прикладных таблиц: `profiles`, `lectures`, `transcripts`, `analyses`, `topics`, `lecture_topics`, `questions`, `answer_options`, `quiz_attempts`, `attempt_answers`, `tasks`, `reminders`.
 
-Row Level Security разрешает пользователю читать и менять только свои строки. Реальные лекции, email и транскрипты не публикуются. Исходники находятся в [db/schema.sql](db/schema.sql) и [db/lecture-plus.dbml](db/lecture-plus.dbml), миграция — в `supabase/migrations`.
+Row Level Security разрешает пользователю читать и менять только свои строки. Реальные лекции, email и транскрипты не публикуются. Исходники находятся в [db/schema.sql](db/schema.sql) и [db/lecture-plus.dbml](db/lecture-plus.dbml), миграция — в `supabase/migrations`. Страница базы строит диаграмму из метаданных реального Supabase через безопасный `/api/schema`; записи студентов и секреты этот API не возвращает.
 
 ## Локальный запуск
 
@@ -61,6 +61,7 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 ```powershell
 npm test
 npm run test:cloud
+npm run test:schema
 npm run build
 npm audit
 ```

@@ -11,8 +11,14 @@ html { overflow-x: clip; }
 .connection-card.connected .status-dot { background: var(--ok); box-shadow: 0 0 0 5px color-mix(in srgb, var(--ok) 17%, transparent); }
 .section-heading { display: flex; justify-content: space-between; align-items: end; gap: 16px; }
 .section-heading h2 { margin: 0; font-size: clamp(1.8rem, 4vw, 2.6rem); }
+.er-live-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+.er-live-tools p { flex: 1 1 420px; margin: 0; color: var(--ink-soft); }
 .er-frame { box-sizing: border-box; max-width: 100%; margin-top: 20px; padding: 16px; overflow: auto; border: 1px solid var(--glass-border); border-radius: 26px; background: var(--glass); box-shadow: var(--glass-shadow); }
-.er-frame img { display: block; width: 100%; min-width: 920px; height: auto; }
+.er-diagram { min-width: 1180px; min-height: 680px; }
+.er-diagram svg { display: block; width: 100% !important; min-width: 1180px; max-width: none !important; height: auto; margin: 0 auto; }
+.er-diagram .entityBox { fill: color-mix(in srgb, var(--glass) 94%, white) !important; stroke: var(--glass-border) !important; }
+.er-diagram .relationshipLabelBox { fill: var(--paper) !important; opacity: .92; }
+.er-error { display: grid; min-height: 640px; place-items: center; text-align: center; }
 .table-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 22px; }
 .schema-card { padding: 18px; border: 1px solid var(--glass-border); border-radius: 20px; background: var(--glass); box-shadow: var(--glass-shadow-soft); }
 .schema-card h3 { margin: 0 0 5px; font-size: 1.06rem; color: var(--mark); }
