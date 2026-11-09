@@ -1,0 +1,832 @@
+{
+  "generatedAt": "2026-10-18T09:07:57.462Z",
+  "source": "Supabase PostgreSQL · public schema",
+  "tableCount": 12,
+  "relationCount": 14,
+  "tables": [
+    {
+      "name": "profiles",
+      "rlsEnabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "primaryKey": true,
+          "unique": true,
+          "foreignKey": false
+        },
+        {
+          "name": "display_name",
+          "type": "text",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "email",
+          "type": "text",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "avatar_url",
+          "type": "text",
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "cloud_sync_enabled",
+          "type": "boolean",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        }
+      ]
+    },
+    {
+      "name": "lectures",
+      "rlsEnabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "primaryKey": true,
+          "unique": true,
+          "foreignKey": false
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": true
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "source_type",
+          "type": "text",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "source_name",
+          "type": "text",
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "language",
+          "type": "text",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "lecture_date",
+          "type": "date",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "duration_seconds",
+          "type": "integer",
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        }
+      ]
+    },
+    {
+      "name": "transcripts",
+      "rlsEnabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "primaryKey": true,
+          "unique": true,
+          "foreignKey": false
+        },
+        {
+          "name": "lecture_id",
+          "type": "uuid",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": true
+        },
+        {
+          "name": "content",
+          "type": "text",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "word_count",
+          "type": "integer",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "detected_language",
+          "type": "text",
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        }
+      ]
+    },
+    {
+      "name": "analyses",
+      "rlsEnabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "primaryKey": true,
+          "unique": true,
+          "foreignKey": false
+        },
+        {
+          "name": "lecture_id",
+          "type": "uuid",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": true
+        },
+        {
+          "name": "summary",
+          "type": "text",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "key_points",
+          "type": "jsonb",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "explanation_sections",
+          "type": "jsonb",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "recommended_actions",
+          "type": "jsonb",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "model_name",
+          "type": "text",
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        }
+      ]
+    },
+    {
+      "name": "topics",
+      "rlsEnabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "primaryKey": true,
+          "unique": true,
+          "foreignKey": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": true,
+          "foreignKey": false
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        }
+      ]
+    },
+    {
+      "name": "lecture_topics",
+      "rlsEnabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "primaryKey": true,
+          "unique": true,
+          "foreignKey": false
+        },
+        {
+          "name": "lecture_id",
+          "type": "uuid",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": true
+        },
+        {
+          "name": "topic_id",
+          "type": "uuid",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": true
+        },
+        {
+          "name": "role",
+          "type": "text",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "reason",
+          "type": "text",
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "confidence",
+          "type": "numeric(4,3)",
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        }
+      ]
+    },
+    {
+      "name": "questions",
+      "rlsEnabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "primaryKey": true,
+          "unique": true,
+          "foreignKey": false
+        },
+        {
+          "name": "lecture_id",
+          "type": "uuid",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": true
+        },
+        {
+          "name": "question_text",
+          "type": "text",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "explanation",
+          "type": "text",
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "position",
+          "type": "integer",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        }
+      ]
+    },
+    {
+      "name": "answer_options",
+      "rlsEnabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "primaryKey": true,
+          "unique": true,
+          "foreignKey": false
+        },
+        {
+          "name": "question_id",
+          "type": "uuid",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": true
+        },
+        {
+          "name": "option_text",
+          "type": "text",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "is_correct",
+          "type": "boolean",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "position",
+          "type": "integer",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        }
+      ]
+    },
+    {
+      "name": "quiz_attempts",
+      "rlsEnabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "primaryKey": true,
+          "unique": true,
+          "foreignKey": false
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": true
+        },
+        {
+          "name": "lecture_id",
+          "type": "uuid",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": true
+        },
+        {
+          "name": "score",
+          "type": "integer",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "total_questions",
+          "type": "integer",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        }
+      ]
+    },
+    {
+      "name": "attempt_answers",
+      "rlsEnabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "primaryKey": true,
+          "unique": true,
+          "foreignKey": false
+        },
+        {
+          "name": "attempt_id",
+          "type": "uuid",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": true
+        },
+        {
+          "name": "question_id",
+          "type": "uuid",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": true
+        },
+        {
+          "name": "selected_option_id",
+          "type": "uuid",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": true
+        },
+        {
+          "name": "is_correct",
+          "type": "boolean",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        }
+      ]
+    },
+    {
+      "name": "tasks",
+      "rlsEnabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "primaryKey": true,
+          "unique": true,
+          "foreignKey": false
+        },
+        {
+          "name": "lecture_id",
+          "type": "uuid",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": true
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "task_type",
+          "type": "text",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "due_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "is_completed",
+          "type": "boolean",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        }
+      ]
+    },
+    {
+      "name": "reminders",
+      "rlsEnabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "primaryKey": true,
+          "unique": true,
+          "foreignKey": false
+        },
+        {
+          "name": "task_id",
+          "type": "uuid",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": true
+        },
+        {
+          "name": "remind_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "channel",
+          "type": "text",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "primaryKey": false,
+          "unique": false,
+          "foreignKey": false
+        }
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "name": "analyses_lecture_id_fkey",
+      "childTable": "analyses",
+      "childColumn": "lecture_id",
+      "parentTable": "lectures",
+      "parentColumn": "id",
+      "deleteRule": "CASCADE",
+      "updateRule": "NO ACTION"
+    },
+    {
+      "name": "answer_options_question_id_fkey",
+      "childTable": "answer_options",
+      "childColumn": "question_id",
+      "parentTable": "questions",
+      "parentColumn": "id",
+      "deleteRule": "CASCADE",
+      "updateRule": "NO ACTION"
+    },
+    {
+      "name": "attempt_answers_attempt_id_fkey",
+      "childTable": "attempt_answers",
+      "childColumn": "attempt_id",
+      "parentTable": "quiz_attempts",
+      "parentColumn": "id",
+      "deleteRule": "CASCADE",
+      "updateRule": "NO ACTION"
+    },
+    {
+      "name": "attempt_answers_question_id_fkey",
+      "childTable": "attempt_answers",
+      "childColumn": "question_id",
+      "parentTable": "questions",
+      "parentColumn": "id",
+      "deleteRule": "CASCADE",
+      "updateRule": "NO ACTION"
+    },
+    {
+      "name": "attempt_answers_selected_option_id_fkey",
+      "childTable": "attempt_answers",
+      "childColumn": "selected_option_id",
+      "parentTable": "answer_options",
+      "parentColumn": "id",
+      "deleteRule": "RESTRICT",
+      "updateRule": "NO ACTION"
+    },
+    {
+      "name": "lecture_topics_lecture_id_fkey",
+      "childTable": "lecture_topics",
+      "childColumn": "lecture_id",
+      "parentTable": "lectures",
+      "parentColumn": "id",
+      "deleteRule": "CASCADE",
+      "updateRule": "NO ACTION"
+    },
+    {
+      "name": "lecture_topics_topic_id_fkey",
+      "childTable": "lecture_topics",
+      "childColumn": "topic_id",
+      "parentTable": "topics",
+      "parentColumn": "id",
+      "deleteRule": "RESTRICT",
+      "updateRule": "NO ACTION"
+    },
+    {
+      "name": "lectures_user_id_fkey",
+      "childTable": "lectures",
+      "childColumn": "user_id",
+      "parentTable": "profiles",
+      "parentColumn": "id",
+      "deleteRule": "CASCADE",
+      "updateRule": "NO ACTION"
+    },
+    {
+      "name": "questions_lecture_id_fkey",
+      "childTable": "questions",
+      "childColumn": "lecture_id",
+      "parentTable": "lectures",
+      "parentColumn": "id",
+      "deleteRule": "CASCADE",
+      "updateRule": "NO ACTION"
+    },
+    {
+      "name": "quiz_attempts_lecture_id_fkey",
+      "childTable": "quiz_attempts",
+      "childColumn": "lecture_id",
+      "parentTable": "lectures",
+      "parentColumn": "id",
+      "deleteRule": "CASCADE",
+      "updateRule": "NO ACTION"
+    },
+    {
+      "name": "quiz_attempts_user_id_fkey",
+      "childTable": "quiz_attempts",
+      "childColumn": "user_id",
+      "parentTable": "profiles",
+      "parentColumn": "id",
+      "deleteRule": "CASCADE",
+      "updateRule": "NO ACTION"
+    },
+    {
+      "name": "reminders_task_id_fkey",
+      "childTable": "reminders",
+      "childColumn": "task_id",
+      "parentTable": "tasks",
+      "parentColumn": "id",
+      "deleteRule": "CASCADE",
+      "updateRule": "NO ACTION"
+    },
+    {
+      "name": "tasks_lecture_id_fkey",
+      "childTable": "tasks",
+      "childColumn": "lecture_id",
+      "parentTable": "lectures",
+      "parentColumn": "id",
+      "deleteRule": "CASCADE",
+      "updateRule": "NO ACTION"
+    },
+    {
+      "name": "transcripts_lecture_id_fkey",
+      "childTable": "transcripts",
+      "childColumn": "lecture_id",
+      "parentTable": "lectures",
+      "parentColumn": "id",
+      "deleteRule": "CASCADE",
+      "updateRule": "NO ACTION"
+    }
+  ]
+}

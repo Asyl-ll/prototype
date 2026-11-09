@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 960" role="img" aria-labelledby="title desc">
+  <title id="title">Lecture+ entity relationship diagram</title>
+  <desc id="desc">Twelve application tables connected with only one-to-many and many-to-one relationships.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f4f8ff"/><stop offset="1" stop-color="#eaf1fb"/></linearGradient>
+    <linearGradient id="head" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#77aef8"/><stop offset="1" stop-color="#4d84e4"/></linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#1d3d74" flood-opacity=".14"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#6d85a8"/></marker>
+    <style>
+      .rel{fill:none;stroke:#6d85a8;stroke-width:2.2;marker-end:url(#arrow)}
+      .rel2{fill:none;stroke:#8aa0c0;stroke-width:2;stroke-dasharray:7 5;marker-end:url(#arrow)}
+      .box{fill:#fff;stroke:#c6d5ea;stroke-width:1.6;filter:url(#shadow)}
+      .external{fill:#f7f9fc;stroke:#9eafc8;stroke-width:1.6;stroke-dasharray:7 5}
+      .bar{fill:url(#head)}
+      .name{font:700 18px Arial,sans-serif;fill:white}
+      .field{font:14px Arial,sans-serif;fill:#21344f}
+      .key{font:700 13px Arial,sans-serif;fill:#346fc5}
+      .small{font:12px Arial,sans-serif;fill:#637792}
+      .card{rx:14}
+    </style>
+  </defs>
+  <rect width="1500" height="960" rx="28" fill="url(#bg)"/>
+  <text x="45" y="48" font-family="Arial,sans-serif" font-size="28" font-weight="700" fill="#142846">Lecture+ · ER diagram</text>
+  <text x="45" y="76" font-family="Arial,sans-serif" font-size="15" fill="#637792">12 application tables · only 1:N and N:1 relationships · PK → FK</text>
+
+  <!-- relationships are drawn first, behind the tables -->
+  <path class="rel" d="M300 290H365"/>
+  <path class="rel" d="M170 360V545H365"/>
+  <path class="rel" d="M635 290H700V165H750"/>
+  <path class="rel" d="M635 290H750"/>
+  <path class="rel" d="M635 305H700V445H750"/>
+  <path class="rel" d="M635 320H680V610H750"/>
+  <path class="rel" d="M500 370V545"/>
+  <path class="rel" d="M500 370V755"/>
+  <path class="rel" d="M1090 445H1020"/>
+  <path class="rel" d="M1020 610H1090"/>
+  <path class="rel" d="M635 610H700V770H750"/>
+  <path class="rel" d="M1020 665H1060V770H1020"/>
+  <path class="rel2" d="M1220 680V700H1040V800H1020"/>
+  <path class="rel" d="M635 755H700V900H750"/>
+
+  <!-- profiles -->
+  <g transform="translate(40 220)"><rect class="box card" width="260" height="140"/><path class="bar" d="M14 0h232a14 14 0 0 1 14 14v32H0V14A14 14 0 0 1 14 0z"/><text class="name" x="18" y="30">profiles</text><text class="key" x="18" y="70">PK id</text><text class="field" x="18" y="94">display_name · email</text><text class="field" x="18" y="118">cloud_sync_enabled</text></g>
+
+  <!-- lectures -->
+  <g transform="translate(365 220)"><rect class="box card" width="270" height="150"/><path class="bar" d="M14 0h242a14 14 0 0 1 14 14v32H0V14A14 14 0 0 1 14 0z"/><text class="name" x="18" y="30">lectures</text><text class="key" x="18" y="70">PK id · FK user_id</text><text class="field" x="18" y="94">title · source_type</text><text class="field" x="18" y="118">language · status</text><text class="field" x="18" y="142">created_at</text></g>
+
+  <!-- transcripts -->
+  <g transform="translate(750 105)"><rect class="box card" width="270" height="120"/><path class="bar" d="M14 0h242a14 14 0 0 1 14 14v32H0V14A14 14 0 0 1 14 0z"/><text class="name" x="18" y="30">transcripts</text><text class="key" x="18" y="70">PK id · FK lecture_id</text><text class="field" x="18" y="94">content · word_count</text></g>
+
+  <!-- analyses -->
+  <g transform="translate(750 250)"><rect class="box card" width="270" height="130"/><path class="bar" d="M14 0h242a14 14 0 0 1 14 14v32H0V14A14 14 0 0 1 14 0z"/><text class="name" x="18" y="30">analyses</text><text class="key" x="18" y="70">PK id · FK lecture_id</text><text class="field" x="18" y="94">summary · key_points</text><text class="field" x="18" y="118">explanation_sections</text></g>
+
+  <!-- lecture topics -->
+  <g transform="translate(750 400)"><rect class="box card" width="270" height="130"/><path class="bar" d="M14 0h242a14 14 0 0 1 14 14v32H0V14A14 14 0 0 1 14 0z"/><text class="name" x="18" y="30">lecture_topics</text><text class="key" x="18" y="70">PK id · FK lecture_id</text><text class="key" x="18" y="92">FK topic_id</text><text class="field" x="18" y="116">role · confidence</text></g>
+
+  <!-- topics -->
+  <g transform="translate(1090 390)"><rect class="box card" width="260" height="120"/><path class="bar" d="M14 0h232a14 14 0 0 1 14 14v32H0V14A14 14 0 0 1 14 0z"/><text class="name" x="18" y="30">topics</text><text class="key" x="18" y="70">PK id</text><text class="field" x="18" y="94">name · description</text></g>
+
+  <!-- quiz attempts -->
+  <g transform="translate(365 520)"><rect class="box card" width="270" height="140"/><path class="bar" d="M14 0h242a14 14 0 0 1 14 14v32H0V14A14 14 0 0 1 14 0z"/><text class="name" x="18" y="30">quiz_attempts</text><text class="key" x="18" y="70">PK id · FK user_id</text><text class="key" x="18" y="92">FK lecture_id</text><text class="field" x="18" y="116">score · total_questions</text></g>
+
+  <!-- questions -->
+  <g transform="translate(750 550)"><rect class="box card" width="270" height="125"/><path class="bar" d="M14 0h242a14 14 0 0 1 14 14v32H0V14A14 14 0 0 1 14 0z"/><text class="name" x="18" y="30">questions</text><text class="key" x="18" y="70">PK id · FK lecture_id</text><text class="field" x="18" y="94">question_text · position</text></g>
+
+  <!-- answer options -->
+  <g transform="translate(1090 550)"><rect class="box card" width="260" height="130"/><path class="bar" d="M14 0h232a14 14 0 0 1 14 14v32H0V14A14 14 0 0 1 14 0z"/><text class="name" x="18" y="30">answer_options</text><text class="key" x="18" y="70">PK id · FK question_id</text><text class="field" x="18" y="94">option_text · is_correct</text><text class="field" x="18" y="118">position</text></g>
+
+  <!-- tasks -->
+  <g transform="translate(365 700)"><rect class="box card" width="270" height="135"/><path class="bar" d="M14 0h242a14 14 0 0 1 14 14v32H0V14A14 14 0 0 1 14 0z"/><text class="name" x="18" y="30">tasks</text><text class="key" x="18" y="70">PK id · FK lecture_id</text><text class="field" x="18" y="94">task_type · due_at</text><text class="field" x="18" y="118">is_completed</text></g>
+
+  <!-- attempt answers -->
+  <g transform="translate(750 720)"><rect class="box card" width="270" height="135"/><path class="bar" d="M14 0h242a14 14 0 0 1 14 14v32H0V14A14 14 0 0 1 14 0z"/><text class="name" x="18" y="30">attempt_answers</text><text class="key" x="18" y="70">PK id · FK attempt_id</text><text class="key" x="18" y="92">FK question_id · option_id</text><text class="field" x="18" y="116">is_correct</text></g>
+
+  <!-- reminders -->
+  <g transform="translate(750 870)"><rect class="box card" width="270" height="80"/><path class="bar" d="M14 0h242a14 14 0 0 1 14 14v32H0V14A14 14 0 0 1 14 0z"/><text class="name" x="18" y="30">reminders</text><text class="key" x="18" y="68">PK id · FK task_id</text></g>
+
+  <g transform="translate(1090 735)"><rect x="0" y="0" width="260" height="110" rx="14" fill="#eef5ff" stroke="#9bb9e5"/><text x="18" y="30" font-family="Arial" font-size="15" font-weight="700" fill="#346fc5">Relationship key</text><text class="field" x="18" y="58">Only 1:N and N:1 links</text><text class="small" x="18" y="82">Every child row has one parent</text></g>
+</svg>

@@ -1,0 +1,18 @@
+{
+  "brand": "Lecture+",
+  "theme": "light-liquid-glass",
+  "colors": {
+    "canvas": { "hex": "#EDF4FF", "rgb": [237, 244, 255], "cmyk": [7, 4, 0, 0] },
+    "paper": { "hex": "#FFFFFF", "rgb": [255, 255, 255], "cmyk": [0, 0, 0, 0] },
+    "ink": { "hex": "#10182B", "rgb": [16, 24, 43], "cmyk": [63, 44, 0, 83] },
+    "inkSoft": { "hex": "#52617A", "rgb": [82, 97, 122], "cmyk": [33, 20, 0, 52] },
+    "accent": { "hex": "#397FF2", "rgb": [57, 127, 242], "cmyk": [76, 48, 0, 5] },
+    "accentLight": { "hex": "#8CC1FF", "rgb": [140, 193, 255], "cmyk": [45, 24, 0, 0] },
+    "success": { "hex": "#167452", "rgb": [22, 116, 82], "cmyk": [81, 0, 29, 55] },
+    "error": { "hex": "#B43A47", "rgb": [180, 58, 71], "cmyk": [0, 68, 61, 29] }
+  },
+  "type": {
+    "display": "Bricolage Grotesque",
+    "body": "Public Sans"
+  }
+}

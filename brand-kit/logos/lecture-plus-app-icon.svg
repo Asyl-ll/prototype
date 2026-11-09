@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Lecture plus application icon">
+  <defs><linearGradient id="bg" x1="30" y1="24" x2="470" y2="488" gradientUnits="userSpaceOnUse"><stop stop-color="#20375F"/><stop offset="1" stop-color="#0B1220"/></linearGradient><linearGradient id="mark" x1="294" y1="92" x2="448" y2="252" gradientUnits="userSpaceOnUse"><stop stop-color="#8CC1FF"/><stop offset="1" stop-color="#3F86F4"/></linearGradient></defs>
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="url(#bg)"/>
+  <path d="M126 112v288h178v-68H196V112z" fill="#F1F6FF"/>
+  <circle cx="374" cy="170" r="78" fill="url(#mark)" stroke="#FFFFFF" stroke-opacity=".22" stroke-width="4"/>
+  <path d="M340 170h68M374 136v68" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round"/>
+</svg>
