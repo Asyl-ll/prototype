@@ -2,7 +2,7 @@
 
 Lecture+ — учебный веб-сервис: запись, файл или заметки превращаются в транскрипт, понятный анализ, будущие темы, квиз, задания и напоминания.
 
-- Сайт: https://lecture-plus-ict.vercel.app
+- Сайт: https://lecture-plus-ict.vercel.app 
 - Живая ER-диаграмма БД: https://lecture-plus-ict.vercel.app/database.html
 - Редактируемая ER-модель: https://lecture-plus-ict.vercel.app/lecture-plus.dbml
 
